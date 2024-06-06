@@ -1,11 +1,19 @@
 import { Grid } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
+import Typography from "@mui/material/Typography";
+import Link from '@mui/material/Link';
 
-function Footer(): JSX.Element {
+function Footer() {
   return (
-    <AppBar position="static" component="footer" sx={{ top: "auto", bottom: 0 }} >
+    <AppBar position="static" component="footer" color="default" sx={{ position: 'fixed', bottom: 0 }} >
       <Grid container justifyContent="center">
-        <p>&copy; 2021 My Blog. All rights reserved.</p>
+        <Typography variant="body2" color="text.secondary" align="center">
+          {'Copyright © '}
+          <Link color="inherit" href="/">
+            Your Website
+          </Link>{' '}
+          {'2024.'}
+        </Typography>
       </Grid>
     </AppBar>
   );

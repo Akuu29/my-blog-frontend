@@ -4,11 +4,12 @@ import Footer from './Footer';
 import LeftSideBar from "./LeftSideBar";
 import RightSideBar from "./RightSideBar";
 import { Grid } from '@mui/material';
-import "modern-css-reset";
+import CssBaseline from '@mui/material/CssBaseline';
 
 function Default() {
   return (
     <>
+      <CssBaseline />
       <Header />
       <Grid container>
         <Grid item xs={2.5}>
