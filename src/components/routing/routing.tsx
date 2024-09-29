@@ -3,6 +3,7 @@ import Default from "../layout/Default";
 import ErrorPage from "../layout/ErrorPage";
 import Articles from "../../views/Articles";
 import Article from "../../views/Article";
+import SignIn from "../../views/SignIn";
 import HelloWorld from "../../views/HelloWorld";
 
 export const router = createBrowserRouter([
@@ -22,6 +23,10 @@ export const router = createBrowserRouter([
       {
         "path": "/article/:id",
         element: <Article />
+      },
+      {
+        "path": "/signin",
+        element: <SignIn />
       }
     ]
   }
