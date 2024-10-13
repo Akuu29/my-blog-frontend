@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -13,11 +15,15 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AuthApi } from '../services/auth_api';
 import { TokenApi } from '../services/token_api';
+import { UserStatusContext } from '../contexts/UserStatusContext';
+import type { UserStatusContextProps } from "../types/user_status_context";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
 function SignIn() {
+  const navigate = useNavigate();
+  const { updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
   // const [cookie, setCookie] = useCookies();
 
   const sendTokenToServiceWorker = (accessToken: string) => {
@@ -51,6 +57,9 @@ function SignIn() {
           //   // secure: true,
           //   httpOnly: true,
           // });
+
+          updateIsLoggedIn(true);
+          navigate("/");
         }
 
       } else {
