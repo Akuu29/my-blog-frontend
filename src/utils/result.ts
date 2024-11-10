@@ -10,6 +10,7 @@ export abstract class Result<T, E> {
 
   abstract isOk(): this is Ok<T, E>;
   abstract isErr(): this is Err<T, E>;
+  abstract unwrap(): T | E;
 }
 
 export class Ok<T, E> extends Result<T, E> {
@@ -24,6 +25,10 @@ export class Ok<T, E> extends Result<T, E> {
   isErr(): this is Err<T, E> {
     return false;
   }
+
+  unwrap(): T {
+    return this.value;
+  }
 }
 
 export class Err<T, E> extends Result<T, E> {
@@ -37,5 +42,9 @@ export class Err<T, E> extends Result<T, E> {
 
   isErr(): this is Err<T, E> {
     return true;
+  }
+
+  unwrap(): E {
+    return this.err;
   }
 }
