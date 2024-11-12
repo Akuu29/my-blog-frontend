@@ -5,11 +5,13 @@ import LeftSideBar from "./LeftSideBar";
 import RightSideBar from "./RightSideBar";
 import { Grid } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
+import ErrorSnackbar from "./ErrorSnackbar";
 
 function Default() {
   return (
     <>
       <CssBaseline />
+      <ErrorSnackbar />
       <Header />
       <Grid container>
         <Grid item xs={2.5}>
