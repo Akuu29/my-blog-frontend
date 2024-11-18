@@ -12,3 +12,9 @@ export type NewCategory = {
 export type UpdateCategory = {
   name: string;
 };
+
+export type ArticlesByCategory = {
+  article_id: number;
+  article_title: string;
+  category_name: string;
+}

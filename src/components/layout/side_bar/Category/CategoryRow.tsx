@@ -33,7 +33,7 @@ function CategoryRow({
   const [editCategoryName, setEditCategoryName] = useState(category.name);
 
   const handleClickCategory = () => {
-    navigate(`/category/${category.id}`);
+    navigate(`/category/${category.name}`);
   };
 
   const handleChangeEditCategoryName = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Default from "../layout/Default";
 import ErrorPage from "../layout/ErrorPage";
+import ArticlesByCategory from "../../views/ArticlesByCategory";
 import Articles from "../../views/Articles";
 import Article from "../../views/Article";
 import SignIn from "../../views/SignIn";
@@ -23,6 +24,10 @@ export const router = createBrowserRouter([
       {
         "path": "/article/:id",
         element: <Article />
+      },
+      {
+        "path": "/category/:category_name",
+        element: <ArticlesByCategory />
       },
       {
         "path": "/signin",
