@@ -1,77 +1,80 @@
-import { type Article } from "../types/article";
+import axios, { AxiosError } from "axios";
+import Result from "../utils/result";
+import type { ErrorResponse, ErrorStatusCodes } from "../types/error_response";
+import type { Article, NewArticle } from "../types/article";
 
-export class ArticleApi { }
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export class ArticleApiLocal extends ArticleApi {
-  static async getArticles(): Promise<Array<Article>> {
-    return [
-      {
-        id: 1,
-        title: "Article 1",
-        body: "Article 1 content",
-        status: "Published",
-        createdAt: "2021-10-01T00:00:00Z",
-        updatedAt: "2021-10-01T00:00:00Z"
-      },
-      {
-        id: 2,
-        title: "Article 2",
-        body: "Article 2 content",
-        status: "Published",
-        createdAt: "2021-10-01T00:00:00Z",
-        updatedAt: "2021-10-01T00:00:00Z"
-      },
-      {
-        id: 3,
-        title: "Article 3",
-        body: "Article 3 content",
-        status: "Published",
-        createdAt: "2021-10-01T00:00:00Z",
-        updatedAt: "2021-10-01T00:00:00Z"
-      },
-      {
-        id: 4,
-        title: "Article 4",
-        body: "Article 4 content",
-        status: "Published",
-        createdAt: "2021-10-01T00:00:00Z",
-        updatedAt: "2021-10-01T00:00:00Z"
-      },
-      {
-        id: 5,
-        title: "Article 5",
-        body: "Article 5 content",
-        status: "Published",
-        createdAt: "2021-10-01T00:00:00Z",
-        updatedAt: "2021-10-01T00:00:00Z"
-      },
-      {
-        id: 6,
-        title: "Article 6",
-        body: "Article 6 content",
-        status: "Published",
-        createdAt: "2021-10-01T00:00:00Z",
-        updatedAt: "2021-10-01T00:00:00Z"
-      },
-      {
-        id: 7,
-        title: "Article 7",
-        body: "Article 7 content",
-        status: "Published",
-        createdAt: "2021-10-01T00:00:00Z",
-        updatedAt: "2021-10-01T00:00:00Z"
+export class ArticleApi {
+  static async create(article: NewArticle): Promise<Result<Article, ErrorResponse>> {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/articles`, article);
+
+      return Result.ok(response.data);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        const errorResponse = {
+          message: err.message,
+          status: Number(err.status) as ErrorStatusCodes
+        };
+
+        return Result.err((errorResponse));
       }
-    ];
+
+      const errorResponse = {
+        message: "Unknown error occurred",
+        status: 500 as ErrorStatusCodes
+      };
+
+      return Result.err(errorResponse);
+    }
   }
 
-  static async getArticle(id: number): Promise<Article> {
-    return {
-      id: id,
-      title: `Article ${id}`,
-      body: `Article ${id} content`,
-      status: "Published",
-      createdAt: "2021-10-01T00:00:00Z",
-      updatedAt: "2021-10-01T00:00:00Z"
-    };
+  static async all(): Promise<Result<Array<Article>, ErrorResponse>> {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/articles`);
+
+      return Result.ok(response.data);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        const errorResponse = {
+          message: err.message,
+          status: Number(err.status) as ErrorStatusCodes
+        };
+
+        return Result.err(errorResponse);
+      }
+
+      const errorResponse = {
+        message: "Unknown error occurred",
+        status: 500 as ErrorStatusCodes
+      };
+
+      return Result.err(errorResponse);
+    }
+  }
+
+  static async find(article_id: number): Promise<Result<Article, ErrorResponse>> {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/articles/${article_id}`);
+
+      return Result.ok(response.data);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        const errorResponse = {
+          message: err.message,
+          status: Number(err.status) as ErrorStatusCodes
+        };
+
+        return Result.err(errorResponse);
+      }
+
+      const errorResponse = {
+        message: "Unknown error occurred",
+        status: 500 as ErrorStatusCodes
+      };
+
+      return Result.err(errorResponse);
+    }
   }
 }
