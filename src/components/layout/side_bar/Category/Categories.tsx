@@ -29,7 +29,7 @@ function Categories() {
   const [categories, setCategories] = useState<Array<Category>>([]);
   useEffect(() => {
     (async () => {
-      const result = await CategoryApi.all();
+      const result = await CategoryApi.all({});
 
       if (result.isOk()) {
         setCategories(result.unwrap());

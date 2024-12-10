@@ -18,3 +18,8 @@ export type ArticlesByCategory = {
   article_title: string;
   category_name: string;
 }
+
+export type CategoryFilter = {
+  id?: number;
+  name?: string;
+}

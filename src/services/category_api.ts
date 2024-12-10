@@ -1,14 +1,16 @@
 import axios, { AxiosError } from "axios";
 import { Result } from "../utils/result";
 import type { ErrorResponse, ErrorStatusCodes } from "../types/error_response";
-import type { Category, NewCategory, UpdateCategory, ArticlesByCategory } from "../types/category";
+import type { Category, NewCategory, UpdateCategory, ArticlesByCategory, CategoryFilter } from "../types/category";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export class CategoryApi {
-  static async all(): Promise<Result<Array<Category>, ErrorResponse>> {
+  static async all(categoryFilter: CategoryFilter): Promise<Result<Array<Category>, ErrorResponse>> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/categories`);
+      const response = await axios.get(`${API_BASE_URL}/categories`, {
+        params: categoryFilter
+      });
 
       return Result.ok(response.data);
     } catch (err) {
