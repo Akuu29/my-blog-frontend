@@ -4,7 +4,7 @@ import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { ErrorSnackbarContext } from '../../contexts/ErrorSnackbarContext';
-import type { ErrorSnackbarContextProps } from '../../types/error_snackbar_context';
+import type { ErrorSnackbarContextProps } from '../../types/error-snackbar-context';
 
 function ErrorSnackbar() {
   const { snackbarState, closeSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;

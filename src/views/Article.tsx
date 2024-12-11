@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { type Article } from "../types/article";
-import { ArticleApiLocal } from "../services/article_api";
 import { useParams } from "react-router-dom";
 import { Grid, Typography } from "@mui/material";
+
+import ArticleApi from "../services/article-api";
+import type { Article } from "../types/article";
 
 function Article() {
   const { id } = useParams<{ id: string }>();

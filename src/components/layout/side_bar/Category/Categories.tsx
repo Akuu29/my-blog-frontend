@@ -8,16 +8,18 @@ import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Pagination from "@mui/material/Pagination";
-import type { Category } from "../../../../types/category";
-import { CategoryApi } from "../../../../services/category_api";
+
+import CategoryApi from "../../../../services/category-api";
 import CategoryRow from "./CategoryRow";
 import { UserStatusContext } from "../../../../contexts/UserStatusContext";
-import type { UserStatusContextProps } from "../../../../types/user_status_context";
 import { ErrorSnackbarContext } from "../../../../contexts/ErrorSnackbarContext";
-import type { ErrorSnackbarContextProps } from "../../../../types/error_snackbar_context";
 import handleError from "../../../../utils/handle-error";
-import { Result } from "../../../../utils/result";
-import type { ErrorResponse } from "../../../../types/error_response";
+import Result from "../../../../utils/result";
+import type { ErrorResponse } from "../../../../types/error-response";
+import type { Category } from "../../../../types/category";
+import type { UserStatusContextProps } from "../../../../types/user-status-context";
+import type { ErrorSnackbarContextProps } from "../../../../types/error-snackbar-context";
+
 
 const CATEGORY_PER_PAGE = 5;
 
@@ -163,6 +165,7 @@ function Categories() {
           userStatus={userStatus}
           updateCategoryHandler={updateCategory}
           deleteCategoryHandler={deleteCategory}
+          key={category.id}
         />
       ))}
       {categories.length > 0 && (

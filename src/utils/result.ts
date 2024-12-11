@@ -1,5 +1,5 @@
 // Result like Rust
-export abstract class Result<T, E> {
+export default abstract class Result<T, E> {
   public static ok<T, E>(value: T): Result<T, E> {
     return new Ok(value);
   }
@@ -13,7 +13,7 @@ export abstract class Result<T, E> {
   abstract unwrap(): T | E;
 }
 
-export class Ok<T, E> extends Result<T, E> {
+class Ok<T, E> extends Result<T, E> {
   constructor(public readonly value: T) {
     super();
   }
@@ -31,7 +31,7 @@ export class Ok<T, E> extends Result<T, E> {
   }
 }
 
-export class Err<T, E> extends Result<T, E> {
+class Err<T, E> extends Result<T, E> {
   constructor(public readonly err: E) {
     super();
   }

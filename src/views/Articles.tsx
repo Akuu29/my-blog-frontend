@@ -1,9 +1,10 @@
 import { Grid, Stack, Typography } from "@mui/material";
 import { Card } from "@mui/material";
 import { useState, useEffect } from "react";
-import type { Article } from "../types/article";
-import { ArticleApiLocal } from "../services/article_api";
+
+import ArticleApi from "../services/article-api";
 import { useNavigate } from "react-router-dom";
+import type { Article } from "../types/article";
 
 function Articles() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function Articles() {
 
   const onClickArticle = (article: Article) => {
     navigate(`/article/${article.id}`);
-  }
+  };
 
   return (
     <Stack spacing={2} direction="column" sx={{ margin: 3 }}>

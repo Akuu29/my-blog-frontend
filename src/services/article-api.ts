@@ -1,11 +1,11 @@
 import axios, { AxiosError } from "axios";
 import Result from "../utils/result";
-import type { ErrorResponse, ErrorStatusCodes } from "../types/error_response";
+import type { ErrorResponse, ErrorStatusCodes } from "../types/error-response";
 import type { Article, NewArticle } from "../types/article";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export class ArticleApi {
+export default class ArticleApi {
   static async create(article: NewArticle): Promise<Result<Article, ErrorResponse>> {
     try {
       const response = await axios.post(`${API_BASE_URL}/articles`, article);

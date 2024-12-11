@@ -13,10 +13,11 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { AuthApi } from '../services/auth_api';
-import { TokenApi } from '../services/token_api';
+
+import AuthApi from '../services/auth-api';
+import TokenApi from '../services/token-api';
 import { UserStatusContext } from '../contexts/UserStatusContext';
-import type { UserStatusContextProps } from "../types/user_status_context";
+import type { UserStatusContextProps } from "../types/user-status-context";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
@@ -26,11 +27,11 @@ function SignIn() {
   const { updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
   // const [cookie, setCookie] = useCookies();
 
-  const sendTokenToServiceWorker = (accessToken: string) => {
+  const sendTokenToServiceWorker = (token: string) => {
     if (navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
         type: "SET_ACCESS_TOKEN",
-        message: accessToken,
+        message: token,
       });
     }
   };
@@ -43,7 +44,8 @@ function SignIn() {
       const result = await AuthApi.signIn(data.get("email") as string, data.get("password") as string);
 
       if (result.isOk()) {
-        const verifyResult = await TokenApi.verifyIdToken(result.value.idToken);
+        sendTokenToServiceWorker(result.value.idToken);
+        const verifyResult = await TokenApi.verifyIdToken();
 
         if (verifyResult.isOk()) {
           // TODO Handle refresh token

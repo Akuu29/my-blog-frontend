@@ -5,4 +5,4 @@ export type UserCredentials = {
   refreshToken: string;
   expiresIn: string;
   localId: string;
-}
+};

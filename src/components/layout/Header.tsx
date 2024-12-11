@@ -13,7 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import { UserStatusContext } from '../../contexts/UserStatusContext';
-import type { UserStatusContextProps } from "../../types/user_status_context";
+import type { UserStatusContextProps } from "../../types/user-status-context";
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 

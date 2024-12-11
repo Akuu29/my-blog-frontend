@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useState } from "react";
-import type { UserStatusContextProps } from "../types/user_status_context";
+import type { UserStatusContextProps } from "../types/user-status-context";
 
 export const UserStatusContext = createContext<UserStatusContextProps | null>(null);
 

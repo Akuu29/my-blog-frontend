@@ -3,12 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
-import type { ArticlesByCategory } from "../types/category";
-import { CategoryApi } from "../services/category_api";
+
+import CategoryApi from "../services/category-api";
 import handleError from "../utils/handle-error";
-import { ErrorResponse } from "../types/error_response";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
-import type { ErrorSnackbarContextProps } from "../types/error_snackbar_context";
+import type { ErrorResponse } from "../types/error-response";
+import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
+import type { ArticlesByCategory } from "../types/category";
 
 function ArticlesByCategory() {
   const navigate = useNavigate();

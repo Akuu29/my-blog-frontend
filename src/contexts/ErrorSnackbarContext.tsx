@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useState } from "react";
-import type { ErrorSnackbarContextProps, snackbarState } from "../types/error_snackbar_context";
+import type { ErrorSnackbarContextProps, snackbarState } from "../types/error-snackbar-context";
 
 export const ErrorSnackbarContext = createContext<ErrorSnackbarContextProps | null>(null);
 

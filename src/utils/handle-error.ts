@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { match } from "ts-pattern";
-import type { ErrorResponse } from "../types/error_response";
+import type { ErrorResponse } from "../types/error-response";
 
 function handleError(
   error: ErrorResponse,

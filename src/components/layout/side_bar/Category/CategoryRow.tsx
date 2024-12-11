@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { UserStatusContextProps } from "../../../../types/user_status_context";
+import { UserStatusContextProps } from "../../../../types/user-status-context";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
+
+import Result from "../../../../utils/result";
 import LongMenu from "../../LongMenu";
 import type { Category } from "../../../../types/category";
-import { Result } from "../../../../utils/result";
 
 const OPTIONS = [
   "Edit",

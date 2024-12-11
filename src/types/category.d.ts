@@ -17,9 +17,9 @@ export type ArticlesByCategory = {
   article_id: number;
   article_title: string;
   category_name: string;
-}
+};
 
 export type CategoryFilter = {
   id?: number;
   name?: string;
-}
+};
