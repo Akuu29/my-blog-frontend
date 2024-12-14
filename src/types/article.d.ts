@@ -1,22 +1,24 @@
-type Status = "Draft" | "Published" | "Deleted";
+export type ArticleStatus = "Draft" | "Published" | "Deleted";
 
 export type Article = {
   id: number;
   title: string;
   body: string;
-  status: Status;
+  status: ArticleStatus;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 export type NewArticle = {
   title: string;
   body: string;
-  status: Status;
-}
+  status: ArticleStatus;
+  categoryId: number | null;
+};
 
 export type UpdateArticle = {
   title: string | null;
   body: string | null;
-  status: Status | null;
-}
+  status: ArticleStatus | null;
+  categoryId: number | null;
+};
