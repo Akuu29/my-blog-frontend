@@ -5,6 +5,7 @@ import ArticlesByCategory from "../../views/ArticlesByCategory";
 import Articles from "../../views/Articles";
 import Article from "../../views/Article";
 import SignIn from "../../views/SignIn";
+import Editor from "../../views/Editor";
 import HelloWorld from "../../views/HelloWorld";
 
 export const router = createBrowserRouter([
@@ -34,5 +35,9 @@ export const router = createBrowserRouter([
         element: <SignIn />
       }
     ]
+  },
+  {
+    "path": "/editor",
+    element: <Editor />
   }
 ]);
