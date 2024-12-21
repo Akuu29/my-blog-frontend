@@ -1,24 +1,47 @@
-import axios from "axios";
-import Result from "../utils/result";
-import { type UserCredentials } from "../types/auth";
+import { initializeApp } from "firebase/app";
+import { getAuth, Auth, signInWithEmailAndPassword, AuthError } from "firebase/auth";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import Result from "../utils/result";
+import type { ErrorResponse } from "../types/error-response";
+
+const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
+const FIREBASE_AUTH_DOMAIN = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
+const FIREBASE_PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+const FIREBASE_STORAGE_BUCKET = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET;
+const FIREBASE_MESSAGING_SENDER_ID = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID;
+const FIREBASE_APP_ID = import.meta.env.VITE_FIREBASE_APP_ID;
+const FIREBASE_MEASUREMENT_ID = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID;
 
 export default class AuthApi {
-  static async signIn(email: string, password: string): Promise<Result<UserCredentials, string>> {
+  private readonly client: Auth;
+
+  constructor() {
+    const firebaseApp = initializeApp({
+      apiKey: FIREBASE_API_KEY,
+      authDomain: FIREBASE_AUTH_DOMAIN,
+      projectId: FIREBASE_PROJECT_ID,
+      storageBucket: FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+      appId: FIREBASE_APP_ID,
+      measurementId: FIREBASE_MEASUREMENT_ID,
+    });
+
+    this.client = getAuth(firebaseApp);
+  }
+
+  public async signIn(email: string, password: string): Promise<Result<string, ErrorResponse>> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/signin`, {
-        email,
-        password,
-        "returnSecureToken": true
-      });
+      const response = await signInWithEmailAndPassword(this.client, email, password);
 
-      return Result.ok(response.data);
+      return Result.ok(await response.user.getIdToken());
     } catch (err) {
-      // TODO Handle error
-      console.error(err);
+      const authError = err as AuthError;
+      const errorResponse: ErrorResponse = {
+        message: authError.message,
+        status: 400,
+      };
 
-      return Result.err("Failed to sign in");
+      return Result.err(errorResponse);
     }
   }
 }

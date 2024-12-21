@@ -18,6 +18,7 @@ import AuthApi from '../services/auth-api';
 import TokenApi from '../services/token-api';
 import { UserStatusContext } from '../contexts/UserStatusContext';
 import type { UserStatusContextProps } from "../types/user-status-context";
+import { AuthApiContext } from '../contexts/AuthApiContext';
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
@@ -26,6 +27,7 @@ function SignIn() {
   const navigate = useNavigate();
   const { updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
   // const [cookie, setCookie] = useCookies();
+  const authApi = useContext(AuthApiContext) as AuthApi;
 
   const sendTokenToServiceWorker = (token: string) => {
     if (navigator.serviceWorker.controller) {
@@ -41,10 +43,13 @@ function SignIn() {
     const data = new FormData(event.currentTarget);
 
     if (data.get("email") && data.get("password")) {
-      const result = await AuthApi.signIn(data.get("email") as string, data.get("password") as string);
+      const result = await authApi.signIn(
+        data.get("email") as string,
+        data.get("password") as string
+      );
 
       if (result.isOk()) {
-        sendTokenToServiceWorker(result.value.idToken);
+        sendTokenToServiceWorker(result.value);
         const verifyResult = await TokenApi.verifyIdToken();
 
         if (verifyResult.isOk()) {
