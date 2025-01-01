@@ -2,7 +2,7 @@ let apiBaseUrl = "";
 let accessToken = null;
 
 self.addEventListener("message", (event) => {
-  const { type, message } = event.data
+  const { type, message } = event.data;
 
   switch (type) {
     case "SET_API_BASE_URL":
@@ -20,7 +20,7 @@ self.addEventListener("message", (event) => {
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
-  if (request.url.startsWith(apiBaseUrl)) {
+  if (apiBaseUrl != "" && request.url.startsWith(apiBaseUrl) && !request.url.includes("/token/")) {
     event.respondWith(
       (async () => {
         if (accessToken) {
@@ -31,7 +31,6 @@ self.addEventListener("fetch", (event) => {
             })
           });
 
-          console.log("Modified request", modifiedRequest);
           return fetch(modifiedRequest);
         } else {
           return fetch(request);
