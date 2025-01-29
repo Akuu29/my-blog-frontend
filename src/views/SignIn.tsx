@@ -17,7 +17,10 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import AuthApi from '../services/auth-api';
 import TokenApi from '../services/token-api';
 import { UserStatusContext } from '../contexts/UserStatusContext';
+import handleError from "../utils/handle-error";
+import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import type { UserStatusContextProps } from "../types/user-status-context";
+import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
 import { AuthApiContext } from '../contexts/AuthApiContext';
 
 // TODO remove, this demo shouldn't need to reset the theme.
@@ -26,7 +29,7 @@ const defaultTheme = createTheme();
 function SignIn() {
   const navigate = useNavigate();
   const { updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
-  // const [cookie, setCookie] = useCookies();
+  const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const authApi = useContext(AuthApiContext) as AuthApi;
 
   const sendTokenToServiceWorker = (token: string) => {
@@ -49,29 +52,19 @@ function SignIn() {
       );
 
       if (result.isOk()) {
-        sendTokenToServiceWorker(result.value);
-        const verifyResult = await TokenApi.verifyIdToken();
+        const verifyResult = await TokenApi.verifyIdToken(result.value);
 
         if (verifyResult.isOk()) {
-          // TODO Handle refresh token
-          const { accessToken, refreshToken } = verifyResult.value;
+          const { accessToken } = verifyResult.value;
 
           sendTokenToServiceWorker(accessToken);
-          // setCookie("refresh_token", refreshToken, {
-          //   path: "/",
-          //   expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-          //   // sameSite: "strict",
-          //   // secure: true,
-          //   httpOnly: true,
-          // });
 
           updateIsLoggedIn(true);
           navigate("/");
         }
 
-      } else {
-        // TODO error handling
-        console.error(result);
+      } else if (result.isErr()) {
+        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
       }
     }
   };
