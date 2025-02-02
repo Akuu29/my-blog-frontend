@@ -1,7 +1,12 @@
+import Categories from "./side-bar/Category/Categories";
+import Tags from "./side-bar/Tag/Tags";
+
+
 function RightSideBar() {
   return (
     <div className="right-sidebar">
-      <h2>Right Sidebar</h2>
+      <Categories />
+      <Tags />
     </div>
   );
 }
