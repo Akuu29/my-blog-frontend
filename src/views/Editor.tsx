@@ -12,16 +12,19 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import IconButton from "@mui/material/IconButton";
+import Chip from "@mui/material/Chip";
 
-import ArticleApi from "../services/article-api";
-import CategoryApi from "../services/category-api";
 import handleError from "../utils/handle-error";
 import Result from "../utils/result";
+import ArticleApi from "../services/article-api";
+import CategoryApi from "../services/category-api";
+import TagApi from "../services/tag-api";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
-import type { NewArticle, ArticleStatus } from "../types/article";
-import type { Category } from "../types/category";
 import type { ErrorResponse } from "../types/error-response";
 import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
+import type { NewArticle, ArticleStatus } from "../types/article";
+import type { Category } from "../types/category";
+import type { Tag } from "../types/tag";
 
 
 function Editor() {
@@ -41,6 +44,20 @@ function Editor() {
       }
     })();
   }, [navigate, openSnackbar]);
+  const [existingTags, setExistingTags] = useState<Array<Tag>>([]);
+  useEffect(() => {
+    (async () => {
+      const result = await TagApi.all();
+
+      if (result.isOk()) {
+        setExistingTags(result.unwrap());
+      } else if (result.isErr()) {
+        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+      }
+    })();
+  }, [navigate, openSnackbar]);
+  const [selectedTags, setSelectedTags] = useState<Array<string>>([]);
+  const [tagAnchorEl, setTagAnchorEl] = useState<null | HTMLElement>(null);
   const [body, setBody] = useState<string>("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openCategoryMenu = Boolean(anchorEl);
@@ -132,6 +149,19 @@ function Editor() {
     }
   };
 
+  const handleClickSelectTagButton = (event: MouseEvent<HTMLButtonElement>) => {
+    setTagAnchorEl(event.currentTarget);
+  };
+
+  const handleClickTagTagItem = (tag: Tag) => {
+    setSelectedTags([...selectedTags, tag.name]);
+    setTagAnchorEl(null);
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setSelectedTags(selectedTags.filter((t) => t !== tag));
+  };
+
   return (
     <>
       <Header />
@@ -199,6 +229,33 @@ function Editor() {
             </MenuItem>
           ))}
         </Menu>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Button variant="outlined" onClick={handleClickSelectTagButton}>
+            Select Tags
+          </Button>
+          <Menu
+            anchorEl={tagAnchorEl}
+            open={Boolean(tagAnchorEl)}
+            onClose={() => setTagAnchorEl(null)}
+          >
+            {existingTags.map((tag, index) => (
+              <MenuItem
+                key={index}
+                onClick={() => handleClickTagTagItem(tag)}>
+                {tag.name}
+              </MenuItem>
+            ))}
+          </Menu>
+          <Box>
+            {selectedTags.map((tag, index) => (
+              <Chip
+                key={index}
+                label={tag}
+                onDelete={() => handleRemoveTag(tag)}
+              />
+            ))}
+          </Box>
+        </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="contained"
