@@ -5,7 +5,7 @@ import ArticlesByCategory from "../../views/ArticlesByCategory";
 import Articles from "../../views/Articles";
 import Article from "../../views/Article";
 import SignIn from "../../views/SignIn";
-import Editor from "../../views/Editor";
+import ArticleForm from "../../views/ArticleForm/ArticleForm";
 import HelloWorld from "../../views/HelloWorld";
 
 export const router = createBrowserRouter([
@@ -38,6 +38,6 @@ export const router = createBrowserRouter([
   },
   {
     "path": "/editor",
-    element: <Editor />
+    element: <ArticleForm />
   }
 ]);
