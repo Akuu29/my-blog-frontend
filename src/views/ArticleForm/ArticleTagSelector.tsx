@@ -9,8 +9,8 @@ import type { Tag } from "../../types/tag";
 
 type ArticleTagSelectorProps = {
   existingTags: Array<Tag>;
-  selectedTags: Array<string>;
-  setSelectedTags: (selectedTags: Array<string>) => void;
+  selectedTags: Array<Tag>;
+  setSelectedTags: (selectedTags: Array<Tag>) => void;
 }
 
 function ArticleTagSelector({ existingTags, selectedTags, setSelectedTags }: ArticleTagSelectorProps) {
@@ -21,12 +21,12 @@ function ArticleTagSelector({ existingTags, selectedTags, setSelectedTags }: Art
   };
 
   const onClickTagItem = (tag: Tag) => {
-    setSelectedTags([...selectedTags, tag.name]);
+    setSelectedTags([...selectedTags, tag]);
     setAnchorEl(null);
   };
 
-  const onRemoveTag = (tag: string) => {
-    setSelectedTags(selectedTags.filter((t) => t !== tag));
+  const onRemoveTag = (tag: Tag) => {
+    setSelectedTags(selectedTags.filter((t) => t.id !== tag.id));
   };
 
   return (
@@ -60,7 +60,7 @@ function ArticleTagSelector({ existingTags, selectedTags, setSelectedTags }: Art
         {selectedTags.map((tag, index) => (
           <Chip
             key={index}
-            label={tag}
+            label={tag.name}
             onDelete={() => onRemoveTag(tag)}
           />
         ))}
