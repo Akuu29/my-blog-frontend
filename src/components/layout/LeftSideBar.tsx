@@ -1,7 +1,9 @@
+import Calendar from "./side-bar/Calendar/Calendar";
+
 function LeftSideBar() {
   return (
     <div className="left-sidebar">
-      <h2>Left Sidebar</h2>
+      <Calendar />
     </div>
   );
 }
