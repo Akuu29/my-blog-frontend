@@ -119,7 +119,7 @@ function TagContainer({
 }
 
 
-function Tags() {
+function TagWidget() {
   const navigate = useNavigate();
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
@@ -229,4 +229,4 @@ function Tags() {
   );
 }
 
-export default Tags;
+export default TagWidget;

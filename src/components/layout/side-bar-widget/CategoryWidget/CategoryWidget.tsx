@@ -23,7 +23,7 @@ import type { ErrorSnackbarContextProps } from "../../../../types/error-snackbar
 
 const CATEGORY_PER_PAGE = 5;
 
-function Categories() {
+function CategoryWidget() {
   const navigate = useNavigate();
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
@@ -181,4 +181,4 @@ function Categories() {
   );
 }
 
-export default Categories;
+export default CategoryWidget;

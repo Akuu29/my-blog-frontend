@@ -23,7 +23,7 @@ const theme = createTheme({
   },
 });
 
-function Calendar() {
+function CalendarWidget() {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const [articles, setArticles] = useState<Array<Article>>([]);
@@ -113,4 +113,4 @@ function Calendar() {
   );
 }
 
-export default Calendar;
+export default CalendarWidget;

@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import Default from "../layout/Default";
+import BasePage from "../layout/BasePage";
 import ErrorPage from "../layout/ErrorPage";
 import ArticlesByCategory from "../../views/ArticlesByCategory";
 import Articles from "../../views/Articles";
@@ -11,7 +11,7 @@ import HelloWorld from "../../views/HelloWorld";
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Default />,
+    element: <BasePage />,
     errorElement: <ErrorPage />,
     children: [
       {
@@ -33,11 +33,11 @@ export const router = createBrowserRouter([
       {
         "path": "/signin",
         element: <SignIn />
+      },
+      {
+        "path": "/editor",
+        element: <ArticleForm />
       }
     ]
   },
-  {
-    "path": "/editor",
-    element: <ArticleForm />
-  }
 ]);
