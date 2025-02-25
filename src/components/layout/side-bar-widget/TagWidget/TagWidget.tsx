@@ -4,16 +4,16 @@ import { ThemeProvider } from "@emotion/react";
 import { createTheme } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import FormControl from "@mui/material/FormControl";
-import FormGroup from "@mui/material/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
+import TagCheckBox from "./TagCheckBox";
+import TagList from "./TagList";
+import TagAdminMenu from "./TagAdminMenu";
+import TagApi from "../../../../services/tag-api";
 import { UserStatusContext } from "../../../../contexts/UserStatusContext";
 import { ErrorSnackbarContext } from "../../../../contexts/ErrorSnackbarContext";
 import handleError from "../../../../utils/handle-error";
@@ -21,9 +21,6 @@ import type { ErrorResponse } from "../../../../types/error-response";
 import type { UserStatusContextProps } from "../../../../types/user-status-context";
 import type { ErrorSnackbarContextProps } from "../../../../types/error-snackbar-context";
 import type { Tag, NewTag } from "../../../../types/tag";
-import TagApi from "../../../../services/tag-api";
-import LongMenu from "../../LongMenu";
-
 
 const theme = createTheme({
   typography: {
@@ -31,100 +28,15 @@ const theme = createTheme({
   },
 });
 
-const OPTIONS = [
-  "Delete",
-];
+type TagWidgetProps = {
+  setSelectedTags: (tag_ids: Array<Tag>) => void;
+};
 
-const DELETE_CONFIRM_MESSAGE = `Deleted tags are also deleted from the associated articles.
-Are you sure you want to delete it?`;
-
-function TagCheckBox({
-  tag,
-  index,
-  deleteTagHandler,
-}: {
-  tag: Tag,
-  index: number,
-  deleteTagHandler: (tag: Tag) => void,
-}) {
-  const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
-
-  const deleteTag = () => {
-    if (window.confirm(DELETE_CONFIRM_MESSAGE)) {
-      deleteTagHandler(tag);
-    }
-  };
-
-  const handleClickMenuItem = (option: string) => {
-    switch (option) {
-      case "Delete":
-        deleteTag();
-        break;
-      default:
-        break;
-    }
-  };
-
-  return (
-    <Box sx={{
-      display: "flex",
-    }}>
-      <FormControlLabel
-        control={<Checkbox />}
-        label={tag.name}
-        key={index}
-      />
-      {userStatus.isLoggedIn && (
-        <LongMenu options={OPTIONS} clickMenuItemHandler={handleClickMenuItem} />
-      )}
-    </Box>
-  );
-}
-
-function TagContainer({
-  tags,
-  deleteTagHandler,
-}: {
-  tags: Array<Tag>,
-  deleteTagHandler: (tag: Tag) => void,
-}) {
-  const leftRow: Array<Tag> = [];
-  const rightRow: Array<Tag> = [];
-  tags.map((tag, index) => {
-    if (index % 2 === 0) {
-      leftRow.push(tag);
-    } else {
-      rightRow.push(tag);
-    }
-  });
-
-  return (
-    <Box sx={{ display: "flex" }}>
-      <FormControl sx={{ m: 2 }} component="fieldset" variant="standard">
-        <FormGroup>
-          {leftRow.map((tag, index) => (
-            <TagCheckBox tag={tag} index={index} deleteTagHandler={deleteTagHandler} />
-          ))}
-        </FormGroup>
-      </FormControl>
-      <FormControl sx={{ m: 2 }} component="fieldset" variant="standard">
-        <FormGroup>
-          {rightRow.map((tag, index) => (
-            <TagCheckBox tag={tag} index={index} deleteTagHandler={deleteTagHandler} />
-          ))}
-        </FormGroup>
-      </FormControl>
-    </Box>
-  );
-}
-
-
-function TagWidget() {
+function TagWidget({ setSelectedTags }: TagWidgetProps) {
   const navigate = useNavigate();
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const [tags, setTags] = useState<Array<Tag>>([]);
-
   useEffect(() => {
     (async () => {
       const result = await TagApi.all();
@@ -137,21 +49,22 @@ function TagWidget() {
     })();
   }, [navigate, openSnackbar]);
 
-  // handle add tag
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<number>>(new Set());
+
   const [addTag, setAddTag] = useState(false);
-  const handleClickAddIcon = () => {
+  const onClickAddIcon = () => {
     setAddTag(true);
   };
-  const handleClickRemoveIcon = () => {
+  const onClickRemoveIcon = () => {
     setAddTag(false);
   };
 
   const [newTag, setNewTag] = useState<NewTag>({ name: "" });
-  const handleChangeNewTag = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeNewTag = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewTag({ name: event.target.value });
   };
 
-  const handleSubmitNewTag = async () => {
+  const onSubmitNewTag = async () => {
     const result = await TagApi.create(newTag);
 
     if (result.isOk()) {
@@ -162,7 +75,6 @@ function TagWidget() {
     }
   };
 
-  // handle delete tag
   const handleDeleteTag = async (tag: Tag) => {
     const result = await TagApi.delete(tag.id);
 
@@ -172,6 +84,30 @@ function TagWidget() {
       handleError((result.unwrap() as ErrorResponse), navigate, openSnackbar, "top", "right");
     }
   };
+
+  const onChangeTagCheckBox = (tag: Tag, checked: boolean) => {
+    setSelectedTagIds((prev) => {
+      const newSelectedTagIds = new Set(prev);
+      if (checked) {
+        newSelectedTagIds.add(tag.id);
+      } else {
+        newSelectedTagIds.delete(tag.id);
+      }
+      return newSelectedTagIds;
+    });
+  };
+
+  // Change selected tags when selectedTagIds changes
+  useEffect(() => {
+    const selectedTags: Array<Tag> = Array.from(selectedTagIds).map((id) => {
+      const tag = tags.find((t) => t.id === id);
+      if (tag) {
+        return tag;
+      }
+    }).filter((tag) => tag !== undefined) as Array<Tag>;
+
+    setSelectedTags(selectedTags);
+  }, [selectedTagIds, setSelectedTags, tags]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -189,12 +125,12 @@ function TagWidget() {
           Tag
         </Typography>
         {userStatus.isLoggedIn && !addTag && (
-          <IconButton onClick={handleClickAddIcon}>
+          <IconButton onClick={onClickAddIcon}>
             <AddIcon />
           </IconButton>
         )}
         {userStatus.isLoggedIn && addTag && (
-          <IconButton onClick={handleClickRemoveIcon}>
+          <IconButton onClick={onClickRemoveIcon}>
             <RemoveIcon />
           </IconButton>
         )}
@@ -202,7 +138,7 @@ function TagWidget() {
       {userStatus.isLoggedIn && addTag && (
         <Box
           component={"form"}
-          onSubmit={handleSubmitNewTag}
+          onSubmit={onSubmitNewTag}
           sx={{
             p: 1,
             display: "flex",
@@ -213,7 +149,7 @@ function TagWidget() {
             label="Add tag"
             variant="standard"
             value={newTag.name}
-            onChange={handleChangeNewTag}
+            onChange={onChangeNewTag}
             sx={{ flexGrow: 1, mr: 1, }}
           />
           <Button
@@ -224,7 +160,21 @@ function TagWidget() {
           </Button>
         </Box>
       )}
-      <TagContainer tags={tags} deleteTagHandler={handleDeleteTag} />
+      <TagList>
+        {tags.map((tag, index) => (
+          <TagCheckBox
+            tag={tag}
+            index={index}
+            checked={selectedTagIds.has(tag.id)}
+            onChange={() => onChangeTagCheckBox(tag, !selectedTagIds.has(tag.id))}
+            adminMenu={
+              userStatus.isLoggedIn && (
+                <TagAdminMenu deleteTag={() => handleDeleteTag(tag)} />
+              )
+            }
+          />
+        ))}
+      </TagList>
     </ThemeProvider>
   );
 }
