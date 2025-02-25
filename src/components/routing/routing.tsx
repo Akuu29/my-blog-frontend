@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import BasePage from "../layout/BasePage";
 import ErrorPage from "../layout/ErrorPage";
 import ArticlesByCategory from "../../views/ArticlesByCategory";
-import Articles from "../../views/Articles";
+import Articles from "../../views/Articles/Articles";
 import Article from "../../views/Article";
 import SignIn from "../../views/SignIn";
 import ArticleForm from "../../views/ArticleForm/ArticleForm";
