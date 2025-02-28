@@ -1,5 +1,6 @@
 import { useState, useContext } from "react";
 import { format } from "date-fns";
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
@@ -75,11 +76,17 @@ function ArticleList({ articles }: ArticleListProps) {
                 WebkitLineClamp: 3,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                mb: 2,
                 wordBreak: "break-word",
                 whiteSpace: "normal",
               }}>
-                {article.body}
+                <MarkdownPreview
+                  source={article.body}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "inherit",
+                    fontFamily: "string",
+                  }}
+                />
               </Typography>
             </Grid>
           </Grid>

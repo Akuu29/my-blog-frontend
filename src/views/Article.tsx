@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import { format } from "date-fns";
@@ -82,17 +83,19 @@ function Article() {
               </Grid>
             )}
             <Grid item xs={12}>
-              <Typography variant="body1" sx={{
-                wordBreak: "break-word",
-                whiteSpace: "normal",
-              }}>
-                {article?.body}
-              </Typography>
+              <MarkdownPreview
+                source={article?.body}
+                style={{
+                  backgroundColor: "transparent",
+                  color: "inherit",
+                  fontFamily: "string",
+                }}
+              />
             </Grid>
           </Grid >
         </PageLayout>
       </Grid>
-    </ThemeProvider >
+    </ThemeProvider>
   );
 }
 
