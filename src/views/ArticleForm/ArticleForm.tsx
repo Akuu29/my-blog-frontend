@@ -8,7 +8,6 @@ import Button from "@mui/material/Button";
 import Close from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 
-import Header from "../../components/layout/Header";
 import handleError from "../../utils/handle-error";
 import Result from "../../utils/result";
 import ArticleApi from "../../services/article-api";
@@ -159,7 +158,6 @@ function ArticleForm() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Header />
       <Stack
         direction="row"
         sx={{
