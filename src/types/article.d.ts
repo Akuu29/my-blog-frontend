@@ -5,6 +5,7 @@ export type Article = {
   title: string;
   body: string;
   status: ArticleStatus;
+  categoryId: number | null;
   createdAt: string;
   updatedAt: string;
 };

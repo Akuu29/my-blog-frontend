@@ -37,6 +37,10 @@ export const router = createBrowserRouter([
       {
         "path": "/editor",
         element: <ArticleForm />
+      },
+      {
+        "path": "/editor/:article_id",
+        element: <ArticleForm />
       }
     ]
   },
