@@ -1,4 +1,5 @@
 import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import Stack from "@mui/material/Stack";
@@ -10,7 +11,6 @@ import AddIcon from "@mui/icons-material/Add";
 import Box from "@mui/material/Box";
 import Pagination from "@mui/material/Pagination";
 
-import { useNavigate } from "react-router-dom";
 import { UserStatusContext } from "../../contexts/UserStatusContext";
 import type { Article } from "../../types/article";
 import type { UserStatusContextProps } from "../../types/user-status-context";
@@ -48,16 +48,21 @@ function ArticleList({ articles }: ArticleListProps) {
           }}
           onClick={() => { navigate("/editor"); }}>
           <AddIcon />
-          <Typography sx={{
-            variant: "h1",
-            fontWeight: 600,
-          }}>
+          <Typography
+            variant="h1"
+            sx={{
+              fontWeight: 600,
+            }}>
             Add New Article
           </Typography>
         </IconButton>
       )}
-      {paginatedArticles.map((article => (
-        <Card sx={{ height: 230, padding: 1 }} variant="elevation" key={article.id} onClick={() => onClickArticle(article)}>
+      {articles.map((article => (
+        <Card
+          variant="elevation"
+          key={article.id}
+          sx={{ height: 230, padding: 1 }}
+          onClick={() => onClickArticle(article)}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
               <Typography variant="h4">
@@ -70,7 +75,7 @@ function ArticleList({ articles }: ArticleListProps) {
               </Typography>
             </Grid>
             <Grid item xs={12}>
-              <Typography sx={{
+              <div style={{
                 display: "-webkit-box",
                 WebkitBoxOrient: "vertical",
                 WebkitLineClamp: 3,
@@ -87,7 +92,7 @@ function ArticleList({ articles }: ArticleListProps) {
                     fontFamily: "string",
                   }}
                 />
-              </Typography>
+              </div>
             </Grid>
           </Grid>
         </Card>

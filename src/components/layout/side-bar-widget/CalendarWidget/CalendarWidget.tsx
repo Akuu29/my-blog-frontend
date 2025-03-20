@@ -79,20 +79,20 @@ function CalendarWidget() {
         Date
       </Typography>
       {Object.keys(articlesByDate).sort().reverse().map((year) => (
-        <Accordion sx={{ m: 1 }}>
+        <Accordion sx={{ m: 1 }} key={year}>
           <AccordionSummary
             expandIcon={<ArrowDropDownIcon />}>
             <Typography>{year}</Typography>
           </AccordionSummary>
           {Object.keys(articlesByDate[year]).sort().reverse().map((month) => (
-            <AccordionDetails>
+            <AccordionDetails key={month}>
               <Accordion elevation={0}>
                 <AccordionSummary
                   expandIcon={<ArrowDropDownIcon />}>
                   <Typography>{MONTH_LIST[parseInt(month) - 1]}</Typography>
                 </AccordionSummary>
                 {articlesByDate[year][month].map((article) => (
-                  <AccordionDetails>
+                  <AccordionDetails key={article.id}>
                     <Typography>
                       <Link
                         underline="hover"

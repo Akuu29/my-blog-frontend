@@ -35,9 +35,9 @@ function CategoryWidget() {
 
       if (result.isOk()) {
         setCategories(result.unwrap());
+      } else {
+        handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
       }
-
-      handleError((result.unwrap() as ErrorResponse), navigate, openSnackbar, "top", "right");
 
     })();
 

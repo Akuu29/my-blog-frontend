@@ -165,6 +165,7 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
           <TagCheckBox
             tag={tag}
             index={index}
+            key={tag.id}
             checked={selectedTagIds.has(tag.id)}
             onChange={() => onChangeTagCheckBox(tag, !selectedTagIds.has(tag.id))}
             adminMenu={
