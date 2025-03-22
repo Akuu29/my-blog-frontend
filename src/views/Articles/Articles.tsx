@@ -1,6 +1,7 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef, useCallback } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
 
 import PageLayout from "../../components/layout/PageLayout";
 import CalendarWidget from "../../components/layout/side-bar-widget/CalendarWidget/CalendarWidget";
@@ -22,26 +23,59 @@ const theme = createTheme({
   }
 });
 
+const ARTICLES_PER_PAGE = 7;
+
 function Articles() {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const [articles, setArticles] = useState<Array<Article>>([]);
+  const cursorRef = useRef<number | null>(null);
+  const loadingRef = useRef<boolean>(false);
+  const loadingIndicatorRef = useRef<HTMLDivElement>(null);
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
 
-  useEffect(() => {
-    (async () => {
+  const moreArticles = useCallback(async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
 
-      const result = selectedTags.length > 0 ?
-        await ArticleApi.findByTag(selectedTags) :
-        await ArticleApi.all();
+    const result = selectedTags.length > 0 ?
+      await ArticleApi.findByTag(selectedTags, cursorRef.current, ARTICLES_PER_PAGE) :
+      await ArticleApi.all(cursorRef.current, ARTICLES_PER_PAGE);
 
-      if (result.isOk()) {
-        setArticles(result.unwrap());
-      } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+    if (result.isOk()) {
+      const body = result.unwrap();
+      setArticles((prev) => [...prev, ...body.items]);
+
+      if (body.nextCursor) {
+        cursorRef.current = body.nextCursor;
       }
-    })();
-  }, [navigate, openSnackbar, selectedTags]);
+    } else if (result.isErr()) {
+      handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+    }
+
+    loadingRef.current = false;
+  }, [selectedTags, navigate, openSnackbar]);
+
+  // Reset articles and cursor when tags change
+  useEffect(() => {
+    setArticles([]);
+    cursorRef.current = null;
+    moreArticles();
+  }, [selectedTags, moreArticles]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !loadingRef.current) {
+        moreArticles();
+      }
+    }, { threshold: 1 });
+
+    if (loadingIndicatorRef.current) {
+      observer.observe(loadingIndicatorRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [moreArticles]);
 
   const leftSideBar = (
     <Stack spacing={1}>
@@ -63,6 +97,13 @@ function Articles() {
         rightSideBar={rightSideBar}
       >
         <ArticleList articles={articles} />
+        <Box sx={{
+          display: "flex",
+          justifyContent: "center",
+        }}>
+          {loadingRef.current && <p>Loading...</p>}
+          <div ref={loadingIndicatorRef} />
+        </Box>
       </PageLayout>
     </ThemeProvider >
   );

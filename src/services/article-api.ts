@@ -3,7 +3,7 @@ import Result from "../utils/result";
 import type { ErrorResponse, ErrorStatusCodes } from "../types/error-response";
 import type { Article, NewArticle, UpdateArticle } from "../types/article";
 import type { Tag } from "../types/tag";
-
+import type { PagedBody } from "../types/paged-body";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default class ArticleApi {
@@ -31,9 +31,12 @@ export default class ArticleApi {
     }
   }
 
-  static async all(): Promise<Result<Array<Article>, ErrorResponse>> {
+  static async all(cursor: number | null = null, perPage: number | null = null): Promise<Result<PagedBody<Article>, ErrorResponse>> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/articles`);
+      const queryParams = cursor && perPage ?
+        `cursor=${cursor}&per_page=${perPage}` :
+        perPage ? `per_page=${perPage}` : "";
+      const response = await axios.get(`${API_BASE_URL}/articles?${queryParams}`);
 
       return Result.ok(response.data);
     } catch (err) {
@@ -127,9 +130,13 @@ export default class ArticleApi {
     }
   }
 
-  static async findByTag(tag_ids: Array<Tag>): Promise<Result<Array<Article>, ErrorResponse>> {
+  static async findByTag(tag_ids: Array<Tag>, cursor: number | null = null, perPage: number | null = null): Promise<Result<PagedBody<Article>, ErrorResponse>> {
     try {
-      const queryParams = tag_ids.map((tag) => `ids=${tag.id}`).join("&");
+      const queryTagIds = tag_ids.map((tag) => `ids=${tag.id}`).join("&");
+      const queryParams = cursor && perPage ?
+        `cursor=${cursor}&per_page=${perPage}&${queryTagIds}` :
+        perPage ? `per_page=${perPage}&${queryTagIds}` :
+          queryTagIds;
       const response = await axios.get(`${API_BASE_URL}/articles/by-tag?${queryParams}`);
 
       return Result.ok(response.data);

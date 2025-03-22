@@ -31,12 +31,13 @@ function CalendarWidget() {
     (async () => {
       const result = await ArticleApi.all();
 
-      if (result.isErr()) {
+      if (result.isOk()) {
+        const body = result.unwrap();
+        setArticles(body.items);
+      } else if (result.isErr()) {
         handleError(result.unwrap(), navigate, openSnackbar, "top", "right");
         return;
       }
-
-      setArticles(result.unwrap() as Array<Article>);
     })();
   }, [navigate, openSnackbar]);
 

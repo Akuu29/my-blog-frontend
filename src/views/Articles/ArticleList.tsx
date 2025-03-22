@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import MarkdownPreview from "@uiw/react-markdown-preview";
@@ -8,14 +8,10 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
-import Box from "@mui/material/Box";
-import Pagination from "@mui/material/Pagination";
 
 import { UserStatusContext } from "../../contexts/UserStatusContext";
 import type { Article } from "../../types/article";
 import type { UserStatusContextProps } from "../../types/user-status-context";
-
-const ARTICLES_PER_PAGE = 7;
 
 type ArticleListProps = {
   articles: Array<Article>;
@@ -28,15 +24,6 @@ function ArticleList({ articles }: ArticleListProps) {
   const onClickArticle = (article: Article) => {
     navigate(`/article/${article.id}`);
   };
-
-  // Pagination
-  const [page, setPage] = useState(1);
-  const handleChangePage = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-  };
-  const startIndex = (page - 1) * ARTICLES_PER_PAGE;
-  const endIndex = startIndex + ARTICLES_PER_PAGE;
-  const paginatedArticles = articles.slice(startIndex, endIndex);
 
   return (
     <Stack spacing={2} direction="column" sx={{ margin: 5 }}>
@@ -97,16 +84,6 @@ function ArticleList({ articles }: ArticleListProps) {
           </Grid>
         </Card>
       )))}
-      <Box sx={{
-        display: "flex",
-        justifyContent: "center",
-      }}>
-        <Pagination
-          count={Math.ceil(articles.length / ARTICLES_PER_PAGE)}
-          size="small"
-          page={page}
-          onChange={handleChangePage} />
-      </Box>
     </Stack>
   );
 }
