@@ -2,7 +2,8 @@ import { useState, useContext, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ThemeProvider } from "@emotion/react";
 import { createTheme } from "@mui/material/styles";
-import MDEditor from "@uiw/react-md-editor";
+import MDEditor, { commands } from "@uiw/react-md-editor";
+import rehypeSanitize from "rehype-sanitize";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import Close from "@mui/icons-material/Close";
@@ -303,7 +304,11 @@ function ArticleForm() {
       <MDEditor
         value={body}
         onChange={(event) => setBody(event || "")}
+        commands={[commands.help]}
         height={1200}
+        previewOptions={{
+          rehypePlugins: [rehypeSanitize],
+        }}
       />
     </ThemeProvider >
   );

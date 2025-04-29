@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { format } from "date-fns";
 import MarkdownPreview from "@uiw/react-markdown-preview";
+import rehypeSanitize from "rehype-sanitize";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
@@ -121,6 +122,8 @@ function Article() {
                   color: "inherit",
                   fontFamily: "string",
                 }}
+                skipHtml={true}
+                rehypePlugins={[rehypeSanitize]}
               />
             </Grid>
           </Grid >

@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import MarkdownPreview from "@uiw/react-markdown-preview";
+import rehypeSanitize from "rehype-sanitize";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
@@ -78,6 +79,8 @@ function ArticleList({ articles }: ArticleListProps) {
                     color: "inherit",
                     fontFamily: "string",
                   }}
+                  skipHtml={true}
+                  rehypePlugins={[rehypeSanitize]}
                 />
               </div>
             </Grid>
