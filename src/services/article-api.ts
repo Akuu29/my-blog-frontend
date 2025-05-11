@@ -1,10 +1,25 @@
 import axios, { AxiosError } from "axios";
+import qs from "qs";
+
 import Result from "../utils/result";
 import type { ErrorResponse, ErrorStatusCodes } from "../types/error-response";
 import type { Article, NewArticle, UpdateArticle } from "../types/article";
-import type { Tag } from "../types/tag";
 import type { PagedBody } from "../types/paged-body";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+type Paging = {
+  cursor: number | null;
+  perPage: number;
+};
+
+type ArticleFilter = {
+  status: string;
+};
+
+type ArticlesByTagFilter = {
+  tagIds: Array<number>;
+};
 
 export default class ArticleApi {
   static async create(article: NewArticle): Promise<Result<Article, ErrorResponse>> {
@@ -31,11 +46,9 @@ export default class ArticleApi {
     }
   }
 
-  static async all(cursor: number | null = null, perPage: number | null = null): Promise<Result<PagedBody<Article>, ErrorResponse>> {
+  static async all(filter?: ArticleFilter, paging?: Paging): Promise<Result<PagedBody<Article>, ErrorResponse>> {
     try {
-      const queryParams = cursor && perPage ?
-        `cursor=${cursor}&per_page=${perPage}` :
-        perPage ? `per_page=${perPage}` : "";
+      const queryParams = qs.stringify({ ...paging, ...filter }, { skipNulls: true });
       const response = await axios.get(`${API_BASE_URL}/articles?${queryParams}`);
 
       return Result.ok(response.data);
@@ -130,13 +143,12 @@ export default class ArticleApi {
     }
   }
 
-  static async findByTag(tag_ids: Array<Tag>, cursor: number | null = null, perPage: number | null = null): Promise<Result<PagedBody<Article>, ErrorResponse>> {
+  static async findByTag(filter: ArticlesByTagFilter, paging: Paging): Promise<Result<PagedBody<Article>, ErrorResponse>> {
     try {
-      const queryTagIds = tag_ids.map((tag) => `ids=${tag.id}`).join("&");
-      const queryParams = cursor && perPage ?
-        `cursor=${cursor}&per_page=${perPage}&${queryTagIds}` :
-        perPage ? `per_page=${perPage}&${queryTagIds}` :
-          queryTagIds;
+      const queryParams = qs.stringify(
+        { ...paging, ...filter },
+        { skipNulls: true, arrayFormat: "brackets", encodeValuesOnly: true }
+      );
       const response = await axios.get(`${API_BASE_URL}/articles/by-tag?${queryParams}`);
 
       return Result.ok(response.data);

@@ -29,7 +29,7 @@ function CalendarWidget() {
   const [articles, setArticles] = useState<Array<Article>>([]);
   useEffect(() => {
     (async () => {
-      const result = await ArticleApi.all();
+      const result = await ArticleApi.all({ status: "published" });
 
       if (result.isOk()) {
         const body = result.unwrap();

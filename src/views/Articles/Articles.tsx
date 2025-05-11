@@ -39,8 +39,8 @@ function Articles() {
     loadingRef.current = true;
 
     const result = selectedTags.length > 0 ?
-      await ArticleApi.findByTag(selectedTags, cursorRef.current, ARTICLES_PER_PAGE) :
-      await ArticleApi.all(cursorRef.current, ARTICLES_PER_PAGE);
+      await ArticleApi.findByTag({ tagIds: selectedTags.map((tag) => tag.id) }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }) :
+      await ArticleApi.all({ status: "published" }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE });
 
     if (result.isOk()) {
       const body = result.unwrap();
@@ -60,8 +60,7 @@ function Articles() {
   useEffect(() => {
     setArticles([]);
     cursorRef.current = null;
-    moreArticles();
-  }, [selectedTags, moreArticles]);
+  }, [selectedTags]);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
