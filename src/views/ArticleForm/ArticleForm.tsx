@@ -14,16 +14,19 @@ import ArticleApi from "../../services/article-api";
 import CategoryApi from "../../services/category-api";
 import TagApi from "../../services/tag-api";
 import ArticleTagsApi from "../../services/article-tags-api";
+import ImageApi from "../../services/image-api";
 import { ErrorSnackbarContext } from "../../contexts/ErrorSnackbarContext";
 import ArticleField from "./ArticleField";
 import ArticleTitleInput from "./ArticleTitleInput";
 import ArticleCategorySelector from "./ArticleCategorySelector";
 import ArticleTagSelector from "./ArticleTagSelector";
+import ArticleImageUploader from "./ArticleImageUploader";
 import type { ErrorSnackbarContextProps } from "../../types/error-snackbar-context";
 import type { Article, NewArticle, UpdateArticle, ArticleStatus } from "../../types/article";
 import type { Category } from "../../types/category";
 import type { Tag } from "../../types/tag";
 import type { ArticleTag } from "../../types/article-tag";
+import type { Image } from "../../types/image";
 
 const theme = createTheme({
   typography: {
@@ -62,7 +65,7 @@ function ArticleForm() {
     })();
   }, [navigate, openSnackbar]);
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
-
+  const [uploadedImages, setUploadedImages] = useState<Array<Image>>([]);
   const [body, setBody] = useState<string>("");
 
   const { article_id } = useParams();
@@ -113,6 +116,17 @@ function ArticleForm() {
         return Result.ok(articleTags);
       };
 
+      const getImages = async (articleId: number): Promise<Result<Array<Image>, null>> => {
+        const result = await ImageApi.all(articleId);
+
+        if (result.isErr()) {
+          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          return Result.err(null);
+        }
+
+        return Result.ok(result.unwrap() as Array<Image>);
+      };
+
       (async () => {
         const findArticleResult = await ArticleApi.find(Number(article_id));
 
@@ -142,6 +156,14 @@ function ArticleForm() {
         }
 
         setSelectedTags(getTagsResult.unwrap() as Array<Tag>);
+
+        const getImagesResult = await getImages(Number(article_id));
+
+        if (getImagesResult.isErr()) {
+          return;
+        }
+
+        setUploadedImages(getImagesResult.unwrap() as Array<Image>);
       })();
     }
   }, [article_id, navigate, openSnackbar]);
@@ -237,6 +259,20 @@ function ArticleForm() {
     }
   };
 
+  const handleImageUpload = (filename: string, imageUrl: string) => {
+    const imageMarkdown = `\n![${filename}](${imageUrl})\n`;
+    setBody((prevBody) => {
+      if (!prevBody) {
+        return imageMarkdown;
+      }
+
+      return prevBody + imageMarkdown;
+    });
+  };
+
+  const handleDeleteImage = (filename: string, imageUrl: string) => {
+    const imageMarkdown = `\n![${filename}](${imageUrl})\n`;
+    setBody((prevBody) => prevBody.replace(imageMarkdown, ""));
   };
 
   return (
@@ -257,6 +293,10 @@ function ArticleForm() {
         <ArticleField>
           <ArticleTagSelector existingTags={existingTags} selectedTags={selectedTags} setSelectedTags={setSelectedTags} />
         </ArticleField>
+        <ArticleField>
+          <ArticleImageUploader articleId={article_id} uploadedImages={uploadedImages} setUploadedImages={setUploadedImages} onImageUpload={handleImageUpload} onDeleteImage={handleDeleteImage} />
+        </ArticleField>
+        <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
           <Button
             variant="outlined"
             endIcon={<SaveIcon />}
