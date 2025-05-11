@@ -37,7 +37,6 @@ function ArticleList({ articles }: ArticleListProps) {
           onClick={() => { navigate("/editor"); }}>
           <AddIcon />
           <Typography
-            variant="h1"
             sx={{
               fontWeight: 600,
             }}>

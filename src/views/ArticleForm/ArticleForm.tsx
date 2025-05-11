@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ThemeProvider } from "@emotion/react";
 import { createTheme } from "@mui/material/styles";
@@ -6,7 +6,6 @@ import MDEditor, { commands } from "@uiw/react-md-editor";
 import rehypeSanitize from "rehype-sanitize";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import Close from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 
 import handleError from "../../utils/handle-error";
@@ -35,10 +34,10 @@ const theme = createTheme({
 function ArticleForm() {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
   const [categoryName, setCategoryName] = useState<string | undefined>(undefined);
   const [existingCategories, setExistingCategories] = useState<Array<Category>>([]);
+  const articleCreatedRef = useRef<boolean>(false);
   useEffect(() => {
     (async () => {
       const result = await CategoryApi.all({});
@@ -68,9 +67,23 @@ function ArticleForm() {
 
   const { article_id } = useParams();
   useEffect(() => {
-    if (article_id) {
-      setIsEditing(true);
+    if (!article_id && !articleCreatedRef.current) {
+      // create an empty article to link image to the article
+      articleCreatedRef.current = true;
+      (async () => {
+        const newArticle: NewArticle = {
+          status: "Draft",
+        };
+        const result = await ArticleApi.create(newArticle);
+        if (result.isErr()) {
+          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          return;
+        }
 
+        const article = result.unwrap() as Article;
+        navigate(`/editor/${article.id}`);
+      })();
+    } else if (article_id) {
       const getCategoryName = async (category_id: number): Promise<Result<string, null>> => {
         const result = await CategoryApi.all({ id: category_id });
 
@@ -163,25 +176,6 @@ function ArticleForm() {
     return Result.ok(categories[0].id);
   };
 
-  const createArticle = async (articleStatus: ArticleStatus, category_id: number | null): Promise<Result<Article, null>> => {
-    const newArticle: NewArticle = {
-      title,
-      body,
-      status: articleStatus,
-      categoryId: category_id,
-    };
-
-    const result = await ArticleApi.create(newArticle);
-
-    if (result.isErr()) {
-      handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
-      return Result.err(null);
-    }
-
-    const article = result.unwrap() as Article;
-    return Result.ok(article);
-  };
-
   const updateArticle = async (article_id: number, articleStatus: ArticleStatus, category_id: number | null): Promise<Result<Article, null>> => {
     const updatedArticle: UpdateArticle = {
       title,
@@ -213,30 +207,18 @@ function ArticleForm() {
     return Result.ok(articleTags);
   };
 
-  const saveArticle = async (ArticleStatus: ArticleStatus, isEditing: boolean) => {
+  const saveArticle = async (ArticleStatus: ArticleStatus) => {
     const getCategoryIdResult = await getCategoryId();
     if (getCategoryIdResult.isErr()) {
       return;
     }
-
     const category_id = getCategoryIdResult.unwrap();
 
-    let article: Article;
-    if (isEditing) {
-      const updateArticleResult = await updateArticle(Number(article_id), ArticleStatus, category_id);
-      if (updateArticleResult.isErr()) {
-        return;
-      }
-
-      article = updateArticleResult.unwrap() as Article;
-    } else {
-      const createArticleResult = await createArticle(ArticleStatus, category_id);
-      if (createArticleResult.isErr()) {
-        return;
-      }
-
-      article = createArticleResult.unwrap() as Article;
+    const updateArticleResult = await updateArticle(Number(article_id), ArticleStatus, category_id);
+    if (updateArticleResult.isErr()) {
+      return;
     }
+    const article = updateArticleResult.unwrap() as Article;
 
     if (selectedTags.length > 0) {
       const articleTagsResult = await attachTags(article.id, selectedTags);
@@ -248,18 +230,13 @@ function ArticleForm() {
     return article;
   };
 
-  const handleClose = async () => {
-    const article = await saveArticle("Draft", isEditing);
+  const handleSave = async () => {
+    const article = await saveArticle("Published");
     if (article) {
       navigate(`/article/${article.id}`);
     }
   };
 
-  const handleSave = async () => {
-    const article = await saveArticle("Published", isEditing);
-    if (article) {
-      navigate(`/article/${article.id}`);
-    }
   };
 
   return (
@@ -269,7 +246,7 @@ function ArticleForm() {
         sx={{
           padding: 2,
           justifyContent: "space-between",
-          alignItems: "center"
+          alignItems: "flex-start"
         }}>
         <ArticleField>
           <ArticleTitleInput title={title} setTitle={setTitle} />
@@ -280,16 +257,6 @@ function ArticleForm() {
         <ArticleField>
           <ArticleTagSelector existingTags={existingTags} selectedTags={selectedTags} setSelectedTags={setSelectedTags} />
         </ArticleField>
-        <Stack direction="row" spacing={1} sx={{ justifyContent: "flx-end" }}>
-          <Button
-            variant="contained"
-            startIcon={<Close />}
-            sx={{
-              fontFamily: "monospace",
-            }}
-            onClick={handleClose} >
-            Close
-          </Button>
           <Button
             variant="outlined"
             endIcon={<SaveIcon />}
@@ -310,7 +277,7 @@ function ArticleForm() {
           rehypePlugins: [rehypeSanitize],
         }}
       />
-    </ThemeProvider >
+    </ThemeProvider>
   );
 }
 
