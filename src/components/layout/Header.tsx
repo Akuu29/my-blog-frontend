@@ -88,7 +88,14 @@ function Header() {
         <Grid container alignItems="center">
           <Grid item xs />
           <Grid item>
-            <Link color="inherit" underline="none" onClick={handleTitleClick}>
+            <Link
+              color="inherit"
+              underline="none"
+              onClick={handleTitleClick}
+              sx={{
+                cursor: 'pointer',
+              }}
+            >
               <Typography
                 variant="h6"
                 noWrap
@@ -104,7 +111,7 @@ function Header() {
                   textDecoration: 'none',
                 }}
               >
-                My Blog
+                Space Shelf
               </Typography>
             </Link>
           </Grid>
