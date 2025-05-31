@@ -8,15 +8,6 @@ export const UserStatusContext = createContext<UserStatusContextProps | null>(nu
 export function UserStatusContextProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const sendTokenToServiceWorker = (token: string) => {
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: "SET_ACCESS_TOKEN",
-        message: token,
-      });
-    }
-  };
-
   const updateIsLoggedIn = (value: boolean) => {
     setIsLoggedIn(value);
   };
@@ -27,7 +18,11 @@ export function UserStatusContextProvider({ children }: { children: ReactNode })
 
       if (result.isOk()) {
         const accessToken = result.unwrap().accessToken;
-        sendTokenToServiceWorker(accessToken);
+
+        navigator.serviceWorker.controller?.postMessage({
+          type: "SET_ACCESS_TOKEN",
+          message: accessToken,
+        });
 
         setIsLoggedIn(true);
       } else {

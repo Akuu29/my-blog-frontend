@@ -11,6 +11,9 @@ self.addEventListener("message", (event) => {
     case "SET_ACCESS_TOKEN":
       accessToken = message;
       break;
+    case "RESET_ACCESS_TOKEN":
+      accessToken = null;
+      break;
     default:
       break;
   }

@@ -12,13 +12,22 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
+import { match } from 'ts-pattern';
+
+import TokenApi from '../../services/token-api';
+import handleError from '../../utils/handle-error';
 import { UserStatusContext } from '../../contexts/UserStatusContext';
+import { ErrorSnackbarContext } from '../../contexts/ErrorSnackbarContext';
 import type { UserStatusContextProps } from "../../types/user-status-context";
+import type { ErrorSnackbarContextProps } from '../../types/error-snackbar-context';
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
+type MenuItem = 'Profile' | 'Account' | 'Dashboard' | 'Logout';
+
 function Header() {
-  const { isLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
+  const { isLoggedIn, updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
+  const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const navigate = useNavigate();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
@@ -36,6 +45,41 @@ function Header() {
 
   const handleSignIn = () => {
     navigate('/signin');
+  };
+
+  const logout = async () => {
+    const result = await TokenApi.resetRefreshToken();
+    if (result.isOk()) {
+      navigator.serviceWorker.controller?.postMessage({
+        type: "RESET_ACCESS_TOKEN",
+      });
+
+      updateIsLoggedIn(false);
+    } else if (result.isErr()) {
+      handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+    }
+  };
+
+  const onClickMenuItem = (item: MenuItem) => {
+    match(item)
+      .with('Profile', () => {
+        // TODO: Implement profile page
+        alert('Profile');
+      })
+      .with('Account', () => {
+        // TODO: Implement account page
+        alert('Account');
+      })
+      .with('Dashboard', () => {
+        // TODO: Dashboard page
+        alert('Dashboard');
+      })
+      .with('Logout', () => {
+        logout();
+      })
+      .exhaustive();
+
+    handleCloseUserMenu();
   };
 
   return (
@@ -90,7 +134,7 @@ function Header() {
                     onClose={handleCloseUserMenu}
                   >
                     {settings.map((setting) => (
-                      <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                      <MenuItem key={setting} onClick={() => onClickMenuItem(setting as MenuItem)}>
                         <Typography textAlign="center">{setting}</Typography>
                       </MenuItem>
                     ))}

@@ -33,12 +33,10 @@ function SignIn() {
   const authApi = useContext(AuthApiContext) as AuthApi;
 
   const sendTokenToServiceWorker = (token: string) => {
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: "SET_ACCESS_TOKEN",
-        message: token,
-      });
-    }
+    navigator.serviceWorker.controller?.postMessage({
+      type: "SET_ACCESS_TOKEN",
+      message: token,
+    });
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
