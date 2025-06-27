@@ -107,7 +107,7 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
     }).filter((tag) => tag !== undefined) as Array<Tag>;
 
     setSelectedTags(selectedTags);
-  }, [selectedTagIds, setSelectedTags, tags]);
+  }, [selectedTagIds, tags]);
 
   return (
     <ThemeProvider theme={theme}>

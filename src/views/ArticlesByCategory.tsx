@@ -13,7 +13,6 @@ import CategoryWidget from "../components/layout/side-bar-widget/CategoryWidget/
 import CategoryApi from "../services/category-api";
 import handleError from "../utils/handle-error";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
-import type { ErrorResponse } from "../types/error-response";
 import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
 import type { ArticlesByCategory } from "../types/category";
 
@@ -35,11 +34,11 @@ function ArticlesByCategory() {
 
       if (result.isOk()) {
         setArticles(result.value);
+      } else if (result.isErr()) {
+        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
       }
-
-      handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "center");
     })();
-  }, [category_name, setArticles, navigate, openSnackbar]);
+  }, [category_name, navigate, openSnackbar]);
 
   const handleClickArticle = (article_id: number) => {
     navigate(`/article/${article_id}`);

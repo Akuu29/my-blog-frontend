@@ -48,9 +48,9 @@ function CategoryWidget() {
 
     if (result.isOk()) {
       setCategories(categories.filter((c) => c.id !== category.id));
+    } else if (result.isErr()) {
+      handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
     }
-
-    handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
   };
 
   const updateCategory = async (category: Category, editCategoryName: string): Promise<Result<null, null>> => {
@@ -101,9 +101,9 @@ function CategoryWidget() {
       if (result.isOk()) {
         setCategories([...categories, result.unwrap()]);
         setNewCategory("");
+      } else if (result.isErr()) {
+        handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
       }
-
-      handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
     }
   };
 
