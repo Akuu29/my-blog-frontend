@@ -4,12 +4,12 @@ import { getAuth, Auth, signInWithEmailAndPassword, AuthError } from "firebase/a
 import Result from "../utils/result";
 import type { ErrorResponse } from "../types/error-response";
 
-const FIREBASE_API_KEY = import.meta.env.VITE_FIREBASE_API_KEY;
+const FIREBASE_PUBLIC_API_KEY = import.meta.env.VITE_FIREBASE_PUBLIC_API_KEY;
 const FIREBASE_AUTH_DOMAIN = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
 const FIREBASE_PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
 const FIREBASE_STORAGE_BUCKET = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET;
 const FIREBASE_MESSAGING_SENDER_ID = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID;
-const FIREBASE_APP_ID = import.meta.env.VITE_FIREBASE_APP_ID;
+const FIREBASE_PUBLIC_APP_ID = import.meta.env.VITE_FIREBASE_PUBLIC_APP_ID;
 const FIREBASE_MEASUREMENT_ID = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID;
 
 export default class AuthApi {
@@ -17,12 +17,12 @@ export default class AuthApi {
 
   constructor() {
     const firebaseApp = initializeApp({
-      apiKey: FIREBASE_API_KEY,
+      apiKey: FIREBASE_PUBLIC_API_KEY,
       authDomain: FIREBASE_AUTH_DOMAIN,
       projectId: FIREBASE_PROJECT_ID,
       storageBucket: FIREBASE_STORAGE_BUCKET,
       messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
-      appId: FIREBASE_APP_ID,
+      appId: FIREBASE_PUBLIC_APP_ID,
       measurementId: FIREBASE_MEASUREMENT_ID,
     });
 
