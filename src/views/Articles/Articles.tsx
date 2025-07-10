@@ -54,7 +54,7 @@ function Articles() {
     }
 
     loadingRef.current = false;
-  }, [selectedTags, navigate, openSnackbar]);
+  }, [selectedTags, navigate]);
 
   // Reset articles and cursor when tags change
   useEffect(() => {

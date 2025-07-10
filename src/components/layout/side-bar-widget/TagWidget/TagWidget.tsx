@@ -47,7 +47,7 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
         handleError((result.unwrap() as ErrorResponse), navigate, openSnackbar, "top", "right");
       }
     })();
-  }, [navigate, openSnackbar]);
+  }, [navigate]);
 
   const [selectedTagIds, setSelectedTagIds] = useState<Set<number>>(new Set());
 

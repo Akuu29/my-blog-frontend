@@ -41,7 +41,7 @@ function CategoryWidget() {
 
     })();
 
-  }, [navigate, openSnackbar]);
+  }, [navigate]);
 
   const deleteCategory = async (category: Category) => {
     const result = await CategoryApi.delete(category.id);

@@ -51,7 +51,7 @@ function ArticleForm() {
         handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
       }
     })();
-  }, [navigate, openSnackbar]);
+  }, [navigate]);
   const [existingTags, setExistingTags] = useState<Array<Tag>>([]);
   useEffect(() => {
     (async () => {
@@ -63,7 +63,7 @@ function ArticleForm() {
         handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
       }
     })();
-  }, [navigate, openSnackbar]);
+  }, [navigate]);
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
   const [uploadedImages, setUploadedImages] = useState<Array<Image>>([]);
   const [body, setBody] = useState<string>("");

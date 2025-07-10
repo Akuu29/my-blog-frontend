@@ -39,7 +39,7 @@ function CalendarWidget() {
         return;
       }
     })();
-  }, [navigate, openSnackbar]);
+  }, [navigate]);
 
   const [articlesByDate, setArticlesByDate] = useState<{ [key: string]: { [key: string]: Article[] } }>({});
 

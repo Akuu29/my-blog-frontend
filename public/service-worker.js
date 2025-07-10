@@ -1,6 +1,10 @@
 let apiBaseUrl = "";
 let accessToken = null;
 
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener("message", (event) => {
   const { type, message } = event.data;
 
