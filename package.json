@@ -5,9 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build:stg1": "tsc && vite build --mode stg",
+    "build:prd2": "tsc && vite build --mode prd",
+    "build:stg": "tsc && CLOUDFLARE_ENV=stg vite build --mode stg",
+    "build:prd": "tsc && CLOUDFLARE_ENV=prd vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview:stg": "npm run build:stg && wrangler dev",
+    "preview:prd": "npm run build:prd && wrangler dev",
+    "deploy-dry-run:stg": "npm run build:stg && wrangler deploy --dry-run",
+    "deploy-dry-run:prd": "npm run build:prd && wrangler deploy --dry-run",
+    "delete-dry-run:stg": "wrangler delete --env stg --dry-run",
+    "delete-dry-run:prd": "wrangler delete --env prd --dry-run"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
@@ -27,16 +35,18 @@
     "ts-pattern": "^5.5.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.8.0",
+    "@types/qs": "^6.9.18",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
-    "@types/qs": "^6.9.18",
-    "@vitejs/plugin-react-swc": "^3.5.0",
+    "@vitejs/plugin-react-swc": "^3.10.2",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
     "typescript": "^5.2.2",
-    "vite": "^5.2.0"
+    "vite": "^6.3.5",
+    "wrangler": "^4.22.0"
   }
 }

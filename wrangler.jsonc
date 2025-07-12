@@ -1,0 +1,27 @@
+{
+    "name": "my-blog-frontend-worker",
+    "compatibility_date": "2025-06-27",
+    "assets": {
+        "directory": "./dist/"
+    },
+    "env": {
+        "stg": {
+            "name": "my-blog-frontend-worker-stg",
+            "routes": [
+                {
+                    "pattern": "stg.urspaceshelf.com",
+                    "custom_domain": true
+                }
+            ]
+        },
+        "prd": {
+            "name": "my-blog-frontend-worker-prd",
+            "routes": [
+                {
+                    "pattern": "www.urspaceshelf.com",
+                    "custom_domain": true
+                }
+            ]
+        }
+    }
+}
