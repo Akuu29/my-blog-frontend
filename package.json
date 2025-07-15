@@ -32,7 +32,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.0",
     "rehype-sanitize": "^6.0.0",
-    "ts-pattern": "^5.5.0"
+    "ts-pattern": "^5.7.1"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.8.0",
