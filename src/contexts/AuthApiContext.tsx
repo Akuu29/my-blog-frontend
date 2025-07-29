@@ -1,10 +1,10 @@
 import { createContext, ReactNode } from "react";
-import AuthApi from "../services/auth-api";
+import FirebaseAuthApi from "../services/firebase-auth-api";
 
-export const AuthApiContext = createContext<AuthApi | null>(null);
+export const AuthApiContext = createContext<FirebaseAuthApi | null>(null);
 
 export function AuthApiContextProvider({ children }: { children: ReactNode }) {
-  const authApi = new AuthApi();
+  const authApi = new FirebaseAuthApi();
 
   return (
     <AuthApiContext.Provider value={authApi}>
