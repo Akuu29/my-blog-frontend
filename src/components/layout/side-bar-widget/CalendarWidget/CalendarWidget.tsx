@@ -65,7 +65,7 @@ function CalendarWidget() {
     setArticlesByDate(groupedArticles);
   }, [articles]);
 
-  const handleClickArticle = (articleId: number) => {
+  const handleClickArticle = (articleId: string) => {
     navigate(`/article/${articleId}`);
   };
 
