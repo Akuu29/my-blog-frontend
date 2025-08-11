@@ -1,5 +1,5 @@
 const EXCLUDED_ENDPOINTS = [
-  "/token/",
+  "/token",
   "/users/signin",
   "/users/signup",
 ];
@@ -31,11 +31,18 @@ self.addEventListener("message", (event) => {
 });
 
 const shouldAttachAuthHeader = (url) => {
-  return (
-    apiBaseUrl != "" &&
-    url.startsWith(apiBaseUrl) &&
-    !EXCLUDED_ENDPOINTS.some((endpoint) => url.includes(endpoint))
-  );
+  try {
+    const urlObj = new URL(url);
+    const normalizedUrl = urlObj.pathname.replace(/\/$/, "");
+
+    return (
+      apiBaseUrl !== "" &&
+      url.startsWith(apiBaseUrl) &&
+      !EXCLUDED_ENDPOINTS.some((endpoint) => normalizedUrl.startsWith(endpoint))
+    );
+  } catch {
+    return false;
+  }
 };
 
 self.addEventListener("fetch", (event) => {
