@@ -12,7 +12,7 @@ const FIREBASE_MESSAGING_SENDER_ID = import.meta.env.VITE_FIREBASE_MESSAGING_SEN
 const FIREBASE_PUBLIC_APP_ID = import.meta.env.VITE_FIREBASE_PUBLIC_APP_ID;
 const FIREBASE_MEASUREMENT_ID = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID;
 
-export default class AuthApi {
+export default class FirebaseAuthApi {
   private readonly client: Auth;
 
   constructor() {
@@ -38,7 +38,7 @@ export default class AuthApi {
       const authError = err as AuthError;
       const errorResponse: ErrorResponse = {
         message: authError.message,
-        status: 400,
+        status: 500,
       };
 
       return Result.err(errorResponse);

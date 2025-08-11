@@ -14,8 +14,8 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-import AuthApi from '../services/auth-api';
-import TokenApi from '../services/token-api';
+import FirebaseAuthApi from '../services/firebase-auth-api';
+import UserApi from '../services/user-api';
 import { UserStatusContext } from '../contexts/UserStatusContext';
 import handleError from "../utils/handle-error";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
@@ -23,14 +23,13 @@ import type { UserStatusContextProps } from "../types/user-status-context";
 import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
 import { AuthApiContext } from '../contexts/AuthApiContext';
 
-// TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
 function SignIn() {
   const navigate = useNavigate();
   const { updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const authApi = useContext(AuthApiContext) as AuthApi;
+  const firebaseAuthApi = useContext(AuthApiContext) as FirebaseAuthApi;
 
   const sendTokenToServiceWorker = (token: string) => {
     if (navigator.serviceWorker.controller) {
@@ -53,13 +52,13 @@ function SignIn() {
     const data = new FormData(event.currentTarget);
 
     if (data.get("email") && data.get("password")) {
-      const result = await authApi.signIn(
+      const result = await firebaseAuthApi.signIn(
         data.get("email") as string,
         data.get("password") as string
       );
 
       if (result.isOk()) {
-        const verifyResult = await TokenApi.verifyIdToken(result.value);
+        const verifyResult = await UserApi.signIn(result.value);
 
         if (verifyResult.isOk()) {
           const { accessToken } = verifyResult.value;
@@ -67,7 +66,7 @@ function SignIn() {
           sendTokenToServiceWorker(accessToken);
 
           updateIsLoggedIn(true);
-          navigate("/");
+          navigate("/articles");
         }
 
       } else if (result.isErr()) {
