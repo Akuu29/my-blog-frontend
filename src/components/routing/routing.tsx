@@ -1,12 +1,13 @@
 import { createBrowserRouter } from "react-router-dom";
 import BasePage from "../layout/BasePage";
 import ErrorPage from "../layout/ErrorPage";
+import HelloWorld from "../../views/HelloWorld";
+import Top from "../../views/Top";
 import ArticlesByCategory from "../../views/ArticlesByCategory";
 import Articles from "../../views/Articles/Articles";
 import Article from "../../views/Article";
 import SignIn from "../../views/SignIn";
 import ArticleForm from "../../views/ArticleForm/ArticleForm";
-import HelloWorld from "../../views/HelloWorld";
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ export const router = createBrowserRouter([
       },
       {
         "path": "/",
+        element: <Top />
+      },
+      {
+        "path": "/articles",
         element: <Articles />
       },
       {
