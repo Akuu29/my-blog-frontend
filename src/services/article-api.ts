@@ -15,10 +15,11 @@ type Paging = {
 
 type ArticleFilter = {
   status: string;
+  categoryId?: string;
 };
 
 type ArticlesByTagFilter = {
-  tagIds: Array<number>;
+  tagIds: Array<string>;
 };
 
 export default class ArticleApi {
@@ -71,7 +72,7 @@ export default class ArticleApi {
     }
   }
 
-  static async find(article_id: number): Promise<Result<Article, ErrorResponse>> {
+  static async find(article_id: string): Promise<Result<Article, ErrorResponse>> {
     try {
       const response = await axios.get(`${API_BASE_URL}/articles/${article_id}`);
 
@@ -95,9 +96,9 @@ export default class ArticleApi {
     }
   }
 
-  static async update(article_id: number, article: UpdateArticle): Promise<Result<Article, ErrorResponse>> {
+  static async update(articleId: string, article: UpdateArticle): Promise<Result<Article, ErrorResponse>> {
     try {
-      const response = await axios.patch(`${API_BASE_URL}/articles/${article_id}`, article);
+      const response = await axios.patch(`${API_BASE_URL}/articles/${articleId}`, article);
 
       return Result.ok(response.data);
     } catch (err) {
@@ -119,9 +120,33 @@ export default class ArticleApi {
     }
   }
 
-  static async delete(article_id: number): Promise<Result<null, ErrorResponse>> {
+  static async attachTags(articleId: string, tagIds: Array<string>): Promise<Result<null, ErrorResponse>> {
     try {
-      await axios.delete(`${API_BASE_URL}/articles/${article_id}`);
+      await axios.put(`${API_BASE_URL}/articles/${articleId}/tags`, tagIds);
+
+      return Result.ok(null);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        const errorResponse = {
+          message: err.message,
+          status: Number(err.status) as ErrorStatusCodes
+        };
+
+        return Result.err((errorResponse));
+      }
+
+      const errorResponse = {
+        message: "Unknown error occurred",
+        status: 500 as ErrorStatusCodes
+      };
+
+      return Result.err(errorResponse);
+    }
+  }
+
+  static async delete(articleId: string): Promise<Result<null, ErrorResponse>> {
+    try {
+      await axios.delete(`${API_BASE_URL}/articles/${articleId}`);
 
       return Result.ok(null);
     } catch (err) {
@@ -149,7 +174,7 @@ export default class ArticleApi {
         { ...paging, ...filter },
         { skipNulls: true, arrayFormat: "brackets", encodeValuesOnly: true }
       );
-      const response = await axios.get(`${API_BASE_URL}/articles/by-tag?${queryParams}`);
+      const response = await axios.get(`${API_BASE_URL}/articles/tags?${queryParams}`);
 
       return Result.ok(response.data);
     } catch (err) {

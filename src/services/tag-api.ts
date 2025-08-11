@@ -54,7 +54,7 @@ export default class TagApi {
     }
   }
 
-  static async delete(tag_id: number): Promise<Result<null, ErrorResponse>> {
+  static async delete(tag_id: string): Promise<Result<null, ErrorResponse>> {
     try {
       await axios.delete(`${API_BASE_URL}/tags/${tag_id}`);
 
@@ -78,9 +78,9 @@ export default class TagApi {
     }
   }
 
-  static async find_tags_by_article_id(article_id: number): Promise<Result<Array<Tag>, ErrorResponse>> {
+  static async find_tags_by_article_id(articleId: string): Promise<Result<Array<Tag>, ErrorResponse>> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/tags/by-article/${article_id}`);
+      const response = await axios.get(`${API_BASE_URL}/tags/article/${articleId}`);
 
       return Result.ok(response.data);
     } catch (err) {

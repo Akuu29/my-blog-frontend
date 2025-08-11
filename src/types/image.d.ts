@@ -1,10 +1,10 @@
 export type Image = {
-  id: number,
+  id: string,
   name: string,
   mimeType: string,
   url: string,
   storageType: string,
-  articleId: number,
+  articleId: string,
   createdAt: string,
   updatedAt: string,
 }

@@ -7,7 +7,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
 type ArticleCategorySelectorProps = {
-  existingCategories: Array<{ id: number; name: string }>;
+  existingCategories: Array<{ name: string }>;
   categoryName: string | undefined;
   setCategoryName: (categoryName: string | undefined) => void;
 }

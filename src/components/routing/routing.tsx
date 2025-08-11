@@ -23,11 +23,11 @@ export const router = createBrowserRouter([
         element: <Articles />
       },
       {
-        "path": "/article/:article_id",
+        "path": "/article/:articleId",
         element: <Article />
       },
       {
-        "path": "/category/:category_name",
+        "path": "/category/:categoryId/articles",
         element: <ArticlesByCategory />
       },
       {
@@ -39,9 +39,9 @@ export const router = createBrowserRouter([
         element: <ArticleForm />
       },
       {
-        "path": "/editor/:article_id",
+        "path": "/editor/:articleId",
         element: <ArticleForm />
-      }
+      },
     ]
   },
 ]);
