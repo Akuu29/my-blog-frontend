@@ -32,22 +32,24 @@ function Article() {
   const navigate = useNavigate();
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const { article_id } = useParams<{ article_id: string }>();
+  const { articleId } = useParams<{ articleId: string }>();
   const [article, setArticle] = useState<Article>();
 
   useEffect(() => {
     (async () => {
-      if (article_id) {
-        const result = await ArticleApi.find(Number(article_id));
+      if (!articleId) {
+        return;
+      }
 
-        if (result.isOk()) {
-          setArticle(result.unwrap());
-        } else if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
-        }
+      const result = await ArticleApi.find(articleId);
+
+      if (result.isOk()) {
+        setArticle(result.unwrap());
+      } else if (result.isErr()) {
+        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
       }
     })();
-  }, [article_id, navigate, openSnackbar]);
+  }, [articleId, navigate]);
 
   const leftSideBar = (
     <Stack spacing={1}>
@@ -62,7 +64,11 @@ function Article() {
   );
 
   const deleteArticle = async () => {
-    const result = await ArticleApi.delete(Number(article_id));
+    if (!articleId) {
+      return;
+    }
+
+    const result = await ArticleApi.delete(articleId);
 
     if (result.isOk()) {
       navigate("/");
@@ -72,7 +78,7 @@ function Article() {
   };
 
   const editArticle = () => {
-    navigate(`/editor/${article_id}`);
+    navigate(`/editor/${articleId}`);
   };
 
   return (

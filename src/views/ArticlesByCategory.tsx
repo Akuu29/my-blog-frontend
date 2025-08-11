@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -10,11 +10,10 @@ import PageLayout from "../components/layout/PageLayout";
 import CalendarWidget from "../components/layout/side-bar-widget/CalendarWidget/CalendarWidget";
 import CategoryWidget from "../components/layout/side-bar-widget/CategoryWidget/CategoryWidget";
 
-import CategoryApi from "../services/category-api";
+import ArticleApi from "../services/article-api";
 import handleError from "../utils/handle-error";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
-import type { ArticlesByCategory } from "../types/category";
 
 const theme = createTheme({
   typography: {
@@ -22,26 +21,43 @@ const theme = createTheme({
   },
 });
 
+type ArticlesByCategory = {
+  articleId: string;
+  articleTitle: string;
+};
+
 function ArticlesByCategory() {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const { category_name } = useParams();
-  const [articles, setArticles] = useState<Array<ArticlesByCategory>>();
+  const { categoryId } = useParams();
+  const { categoryName } = useLocation().state;
+  const [articlesByCategory, setArticlesByCategory] = useState<Array<ArticlesByCategory>>();
 
   useEffect(() => {
     (async () => {
-      const result = await CategoryApi.find_articles_by_category(category_name as string);
+      const filter = {
+        status: "published",
+        categoryId: categoryId,
+      };
+      const pagination = {
+        cursor: null,
+        perPage: 20,
+      };
+      const result = await ArticleApi.all(filter, pagination);
 
       if (result.isOk()) {
-        setArticles(result.value);
+        setArticlesByCategory(result.value.items.map((article) => ({
+          articleId: article.id,
+          articleTitle: article.title,
+        })));
       } else if (result.isErr()) {
         handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
       }
     })();
-  }, [category_name, navigate, openSnackbar]);
+  }, [categoryId, categoryName, navigate]);
 
-  const handleClickArticle = (article_id: number) => {
-    navigate(`/article/${article_id}`);
+  const handleClickArticle = (articleId: string) => {
+    navigate(`/article/${articleId}`);
   };
 
   const leftSideBar = (
@@ -78,26 +94,26 @@ function ArticlesByCategory() {
               fontWeight: 500,
               fontSize: "1.5rem",
             }}>
-              {category_name}
+              {categoryName}
             </Typography>
           </Box>
           <Box sx={{
             textAlign: "left",
           }}>
-            {articles?.map((article) => (
+            {articlesByCategory?.map((article) => (
               <Link
                 underline="hover"
                 sx={{ cursor: "pointer" }}
-                onClick={() => handleClickArticle(article.article_id)}
-                key={article.article_id}
+                onClick={() => handleClickArticle(article.articleId)}
+                key={article.articleId}
               >
                 <Typography
-                  key={article.article_id}
+                  key={article.articleId}
                   sx={{
                     fontFamily: "monospace",
                     m: 2,
                   }}>
-                  ・{article.article_title}
+                  ・{article.articleTitle}
                 </Typography>
               </Link>
             ))}

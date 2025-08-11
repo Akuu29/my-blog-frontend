@@ -33,7 +33,7 @@ function ArticleImageUploader({ articleId, uploadedImages, setUploadedImages, on
     const formData = new FormData();
     formData.append("file", file);
     formData.append("filename", file.name);
-    formData.append("article_id", articleId);
+    formData.append("articleId", articleId);
 
     const result = await ImageApi.upload(formData);
     if (result.isErr()) {
@@ -65,7 +65,7 @@ function ArticleImageUploader({ articleId, uploadedImages, setUploadedImages, on
     }
   };
 
-  const handleDeleteImage = async (imageId: number) => {
+  const handleDeleteImage = async (imageId: string) => {
     const image = uploadedImages.find(image => image.id === imageId);
     if (!image) {
       return;

@@ -31,7 +31,7 @@ export default class ImageApi {
     }
   }
 
-  static async all(articleId: number): Promise<Result<Array<Image>, ErrorResponse>> {
+  static async all(articleId: string): Promise<Result<Array<Image>, ErrorResponse>> {
     try {
       const filter = {
         articleId: articleId
@@ -58,7 +58,7 @@ export default class ImageApi {
     }
   }
 
-  static async delete(imageId: number): Promise<Result<null, ErrorResponse>> {
+  static async delete(imageId: string): Promise<Result<null, ErrorResponse>> {
     try {
       await axios.delete(`${API_BASE_URL}/images/${imageId}`);
 
