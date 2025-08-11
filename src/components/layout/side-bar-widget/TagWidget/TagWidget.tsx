@@ -29,7 +29,7 @@ const theme = createTheme({
 });
 
 type TagWidgetProps = {
-  setSelectedTags: (tag_ids: Array<Tag>) => void;
+  setSelectedTags: (tags: Array<Tag>) => void;
 };
 
 function TagWidget({ setSelectedTags }: TagWidgetProps) {
@@ -49,7 +49,7 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
     })();
   }, [navigate]);
 
-  const [selectedTagIds, setSelectedTagIds] = useState<Set<number>>(new Set());
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
 
   const [addTag, setAddTag] = useState(false);
   const onClickAddIcon = () => {
@@ -64,11 +64,20 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
     setNewTag({ name: event.target.value });
   };
 
-  const onSubmitNewTag = async () => {
-    const result = await TagApi.create(newTag);
+  const onSubmitNewTag = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const raw = data.get("tag");
+    const tagName = typeof raw === "string" ? raw.trim() : "";
+
+    if (!tagName) {
+      return;
+    }
+
+    const result = await TagApi.create({ name: tagName });
 
     if (result.isOk()) {
-      setTags([...tags, result.unwrap()]);
+      setTags((prev) => [...prev, result.unwrap()]);
       setNewTag({ name: "" });
     } else {
       handleError((result.unwrap() as ErrorResponse), navigate, openSnackbar, "top", "right");
@@ -148,6 +157,7 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
           <TextField
             label="Add tag"
             variant="standard"
+            name="tag"
             value={newTag.name}
             onChange={onChangeNewTag}
             sx={{ flexGrow: 1, mr: 1, }}

@@ -93,17 +93,20 @@ function CategoryWidget() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const category = data.get("category");
+    const raw = data.get("category");
+    const categoryName = typeof raw === "string" ? raw.trim() : "";
 
-    if (category) {
-      const result = await CategoryApi.create({ name: category as string });
+    if (!categoryName) {
+      return;
+    }
 
-      if (result.isOk()) {
-        setCategories([...categories, result.unwrap()]);
-        setNewCategory("");
-      } else if (result.isErr()) {
-        handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
-      }
+    const result = await CategoryApi.create({ name: categoryName });
+
+    if (result.isOk()) {
+      setCategories((prev) => [...prev, result.unwrap()]);
+      setNewCategory("");
+    } else if (result.isErr()) {
+      handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
     }
   };
 
