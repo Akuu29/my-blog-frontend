@@ -1,3 +1,9 @@
+const EXCLUDED_ENDPOINTS = [
+  "/token/",
+  "/users/signin",
+  "/users/signup",
+];
+
 let apiBaseUrl = "";
 let accessToken = null;
 
@@ -24,10 +30,18 @@ self.addEventListener("message", (event) => {
 
 });
 
+const shouldAttachAuthHeader = (url) => {
+  return (
+    apiBaseUrl != "" &&
+    url.startsWith(apiBaseUrl) &&
+    !EXCLUDED_ENDPOINTS.some((endpoint) => url.includes(endpoint))
+  );
+};
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
-  if (apiBaseUrl != "" && request.url.startsWith(apiBaseUrl) && !request.url.includes("/token/")) {
+  if (shouldAttachAuthHeader(request.url)) {
     event.respondWith(
       (async () => {
         if (accessToken) {
