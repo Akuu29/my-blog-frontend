@@ -67,17 +67,20 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
   const onSubmitNewTag = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const tag = data.get("tag");
+    const raw = data.get("tag");
+    const tagName = typeof raw === "string" ? raw.trim() : "";
 
-    if (tag) {
-      const result = await TagApi.create({ name: tag as string });
+    if (!tagName) {
+      return;
+    }
 
-      if (result.isOk()) {
-        setTags([...tags, result.unwrap()]);
-        setNewTag({ name: "" });
-      } else {
-        handleError((result.unwrap() as ErrorResponse), navigate, openSnackbar, "top", "right");
-      }
+    const result = await TagApi.create({ name: tagName });
+
+    if (result.isOk()) {
+      setTags((prev) => [...prev, result.unwrap()]);
+      setNewTag({ name: "" });
+    } else {
+      handleError((result.unwrap() as ErrorResponse), navigate, openSnackbar, "top", "right");
     }
   };
 
