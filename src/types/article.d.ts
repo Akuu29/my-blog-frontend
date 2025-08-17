@@ -23,3 +23,13 @@ export type UpdateArticle = {
   status: ArticleStatus | null;
   categoryId: string | null;
 };
+
+export type ArticleFilter = {
+  status: string;
+  categoryId?: string;
+  titleContains?: string;
+};
+
+export type ArticlesByTagFilter = {
+  tagIds: Array<string>;
+};

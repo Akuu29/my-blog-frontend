@@ -8,6 +8,7 @@ import Articles from "../../views/Articles/Articles";
 import Article from "../../views/Article";
 import SignIn from "../../views/SignIn";
 import ArticleForm from "../../views/ArticleForm/ArticleForm";
+import SearchResults from "../../views/SearchResults";
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
       {
         "path": "/editor/:articleId",
         element: <ArticleForm />
+      },
+      {
+        "path": "/search",
+        element: <SearchResults />
       },
     ]
   },
