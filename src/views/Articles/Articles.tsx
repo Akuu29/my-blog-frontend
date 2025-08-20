@@ -2,6 +2,9 @@ import { useState, useEffect, useContext, useRef, useCallback } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import AddIcon from "@mui/icons-material/Add";
 
 import PageLayout from "../../components/layout/PageLayout";
 import CalendarWidget from "../../components/layout/side-bar-widget/CalendarWidget/CalendarWidget";
@@ -13,9 +16,11 @@ import ArticleApi from "../../services/article-api";
 import { useNavigate } from "react-router-dom";
 import handleError from "../../utils/handle-error";
 import { ErrorSnackbarContext } from "../../contexts/ErrorSnackbarContext";
+import { UserStatusContext } from "../../contexts/UserStatusContext";
 import type { Article } from "../../types/article";
+import type { Tag } from "../../types/tag";
 import type { ErrorSnackbarContextProps } from "../../types/error-snackbar-context";
-import { Tag } from "../../types/tag";
+import type { UserStatusContextProps } from "../../types/user-status-context";
 
 const theme = createTheme({
   typography: {
@@ -28,6 +33,7 @@ const ARTICLES_PER_PAGE = 7;
 function Articles() {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const [articles, setArticles] = useState<Array<Article>>([]);
   const cursorRef = useRef<number | null>(null);
   const loadingRef = useRef<boolean>(false);
@@ -95,7 +101,25 @@ function Articles() {
         leftSideBar={leftSideBar}
         rightSideBar={rightSideBar}
       >
-        <ArticleList articles={articles} />
+        <Stack spacing={2} sx={{ margin: 5 }}>
+          {userStatus.isLoggedIn && (
+            <IconButton
+              disableRipple={true}
+              sx={{
+                cursor: "pointer"
+              }}
+              onClick={() => { navigate("/editor"); }}>
+              <AddIcon />
+              <Typography
+                sx={{
+                  fontWeight: 600,
+                }}>
+                Add New Article
+              </Typography>
+            </IconButton>
+          )}
+          <ArticleList articles={articles} />
+        </Stack>
         <Box sx={{
           display: "flex",
           justifyContent: "center",
