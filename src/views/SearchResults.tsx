@@ -42,7 +42,11 @@ function SearchResults() {
 
   useEffect(() => {
     const fetchSearchResults = async () => {
-      if (!searchQuery.trim()) {
+      const trimmedSearchQuery = searchQuery.trim();
+      if (!trimmedSearchQuery) {
+        setArticles([]);
+        setUsers([]);
+        setHasSearched(false);
         setLoading(false);
         return;
       }
@@ -52,11 +56,11 @@ function SearchResults() {
 
       const [articlesResult, usersResult] = await Promise.all([
         ArticleApi.all(
-          { status: "published", titleContains: searchQuery.trim() },
+          { status: "published", titleContains: trimmedSearchQuery },
           { cursor: null, perPage: 50 }
         ),
         UserApi.all(
-          { nameContains: searchQuery.trim() },
+          { nameContains: trimmedSearchQuery },
           { cursor: null, perPage: 50 }
         )
       ]);
@@ -66,6 +70,7 @@ function SearchResults() {
         setArticles(body.items);
       } else if (articlesResult.isErr()) {
         handleError(articlesResult.unwrap(), navigate, openSnackbar, "top", "center");
+        setArticles([]);
       }
 
       if (usersResult.isOk()) {
@@ -73,6 +78,7 @@ function SearchResults() {
         setUsers(body.items);
       } else if (usersResult.isErr()) {
         handleError(usersResult.unwrap(), navigate, openSnackbar, "top", "center");
+        setUsers([]);
       }
 
       setLoading(false);

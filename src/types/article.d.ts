@@ -25,7 +25,7 @@ export type UpdateArticle = {
 };
 
 export type ArticleFilter = {
-  status: string;
+  status?: string;
   categoryId?: string;
   titleContains?: string;
 };

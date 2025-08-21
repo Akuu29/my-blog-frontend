@@ -10,12 +10,8 @@ function handleError(
   horizontal: "left" | "center" | "right",
 ) {
   match(error.status)
-    .with(400, () => openSnackbar(vertical, horizontal, error.message))
     .with(401, () => navigator("/signin"))
-    .with(403, () => openSnackbar(vertical, horizontal, error.message))
-    .with(404, () => openSnackbar(vertical, horizontal, error.message))
-    .with(500, () => openSnackbar(vertical, horizontal, error.message))
-    .exhaustive();
+    .otherwise(() => openSnackbar(vertical, horizontal, error.message));
 }
 
 export default handleError;
