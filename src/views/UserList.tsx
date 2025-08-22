@@ -3,6 +3,7 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
+import CardActionArea from "@mui/material/CardActionArea";
 import Avatar from "@mui/material/Avatar";
 
 import type { User } from "../types/user";
@@ -25,29 +26,29 @@ function UserList({ users }: UserListProps) {
           variant="outlined"
           key={user.id}
           sx={{
-            cursor: 'pointer',
             transition: 'all 0.2s ease-in-out',
             '&:hover': {
               boxShadow: 3,
               transform: 'translateY(-2px)'
             }
           }}
-          onClick={() => onClickUser(user)}
         >
-          <CardContent>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item>
-                <Avatar sx={{ width: 56, height: 56 }}>
-                  {user.name.charAt(0).toUpperCase()}
-                </Avatar>
+          <CardActionArea onClick={() => onClickUser(user)} aria-label={`Open user: ${user.name}`}>
+            <CardContent>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item>
+                  <Avatar sx={{ width: 56, height: 56 }}>
+                    {(user.name?.trim?.().charAt(0) || "?").toUpperCase()}
+                  </Avatar>
+                </Grid>
+                <Grid item xs>
+                  <Typography variant="h6" component="h3" gutterBottom>
+                    {user.name}
+                  </Typography>
+                </Grid>
               </Grid>
-              <Grid item xs>
-                <Typography variant="h6" component="h3" gutterBottom>
-                  {user.name}
-                </Typography>
-              </Grid>
-            </Grid>
-          </CardContent>
+            </CardContent>
+          </CardActionArea>
         </Card>
       ))}
     </Stack>
