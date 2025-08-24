@@ -38,10 +38,11 @@ function Articles() {
   const cursorRef = useRef<number | null>(null);
   const loadingRef = useRef<boolean>(false);
   const loadingIndicatorRef = useRef<HTMLDivElement>(null);
+  const hasMoreRef = useRef<boolean>(true);
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
 
   const moreArticles = useCallback(async () => {
-    if (loadingRef.current) return;
+    if (loadingRef.current || !hasMoreRef.current) return;
     loadingRef.current = true;
 
     const result = selectedTags.length > 0 ?
@@ -54,7 +55,10 @@ function Articles() {
 
       if (body.nextCursor) {
         cursorRef.current = body.nextCursor;
+      } else {
+        hasMoreRef.current = false;
       }
+
     } else if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
     }
@@ -66,6 +70,7 @@ function Articles() {
   useEffect(() => {
     setArticles([]);
     cursorRef.current = null;
+    hasMoreRef.current = true;
   }, [selectedTags]);
 
   useEffect(() => {
