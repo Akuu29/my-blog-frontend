@@ -35,7 +35,7 @@ function Articles() {
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const [articles, setArticles] = useState<Array<Article>>([]);
-  const cursorRef = useRef<number | null>(null);
+  const cursorRef = useRef<string | null>(null);
   const loadingRef = useRef<boolean>(false);
   const loadingIndicatorRef = useRef<HTMLDivElement>(null);
   const hasMoreRef = useRef<boolean>(true);

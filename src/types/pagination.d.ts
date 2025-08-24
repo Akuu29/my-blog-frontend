@@ -1,4 +1,4 @@
 export type Pagination = {
-  cursor: number | null;
-  perPage: number;
+  cursor?: string | null;
+  perPage?: number;
 };
