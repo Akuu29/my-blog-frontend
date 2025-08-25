@@ -13,7 +13,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default class UserApi {
   static async signIn(idToken: string): Promise<Result<ApiCredentials, ErrorResponse>> {
-    return requestSafely(axios.post(`${API_BASE_URL}/users/signin`, {}, {
+    return requestSafely<ApiCredentials>(axios.post(`${API_BASE_URL}/users/signin`, {}, {
       headers: {
         Authorization: `Bearer ${idToken}`
       },
@@ -23,6 +23,6 @@ export default class UserApi {
 
   static async all(filter: UserFilter, pagination?: Pagination): Promise<Result<PagedBody<User>, ErrorResponse>> {
     const queryParams = qs.stringify({ ...pagination, ...filter }, { skipNulls: true });
-    return requestSafely(axios.get(`${API_BASE_URL}/users?${queryParams}`));
+    return requestSafely<PagedBody<User>>(axios.get(`${API_BASE_URL}/users?${queryParams}`));
   }
 }

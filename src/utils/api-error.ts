@@ -4,7 +4,7 @@ import type { ErrorResponse } from "../types/error-response";
 
 export function toErrorResponse(err: unknown): ErrorResponse {
   if (axios.isAxiosError(err)) {
-    const status = err.response?.status as number;
+    const status = (err.response?.status as number) ?? 0;
     const message = err.response?.data?.message ?? err.message;
 
     return {

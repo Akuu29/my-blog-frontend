@@ -103,7 +103,7 @@ function ArticleForm() {
       };
 
       const getTags = async (articleId: string): Promise<Result<Array<Tag>, null>> => {
-        const result = await TagApi.find_tags_by_article_id(articleId);
+        const result = await TagApi.findTagsByArticleId(articleId);
 
         if (result.isErr()) {
           handleError(result.unwrap(), navigate, openSnackbar, "top", "center");

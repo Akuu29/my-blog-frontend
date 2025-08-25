@@ -9,13 +9,13 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default class TokenApi {
   static async refreshToken(): Promise<Result<ApiCredentials, ErrorResponse>> {
-    return requestSafely(axios.get(`${API_BASE_URL}/token/refresh`, {
+    return requestSafely<ApiCredentials>(axios.get(`${API_BASE_URL}/token/refresh`, {
       withCredentials: true,
     }));
   }
 
   static async resetRefreshToken(): Promise<Result<null, ErrorResponse>> {
-    return requestSafely(axios.get(`${API_BASE_URL}/token/reset`, {
+    return requestSafely<null>(axios.get(`${API_BASE_URL}/token/reset`, {
       withCredentials: true,
     }));
   }
