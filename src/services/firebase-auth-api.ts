@@ -35,13 +35,18 @@ export default class FirebaseAuthApi {
 
       return Result.ok(await response.user.getIdToken());
     } catch (err) {
-      const authError = err as AuthError;
-      const errorResponse: ErrorResponse = {
-        message: authError.message,
-        status: 500,
-      };
+      if ((err as AuthError)?.code === "auth/invalid-credential") {
+        const errorResponse: ErrorResponse = {
+          message: "Invalid credentials",
+          status: 400,
+        };
+        return Result.err(errorResponse);
+      }
 
-      return Result.err(errorResponse);
+      return Result.err({
+        message: "Unknown error occurred",
+        status: 500,
+      });
     }
   }
 }

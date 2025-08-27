@@ -21,6 +21,7 @@ import type { Article } from "../../types/article";
 import type { Tag } from "../../types/tag";
 import type { ErrorSnackbarContextProps } from "../../types/error-snackbar-context";
 import type { UserStatusContextProps } from "../../types/user-status-context";
+import type { Cursor } from "../../types/paged-body";
 
 const theme = createTheme({
   typography: {
@@ -35,13 +36,14 @@ function Articles() {
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const [articles, setArticles] = useState<Array<Article>>([]);
-  const cursorRef = useRef<number | null>(null);
+  const cursorRef = useRef<Cursor | null>(null);
   const loadingRef = useRef<boolean>(false);
   const loadingIndicatorRef = useRef<HTMLDivElement>(null);
+  const hasMoreRef = useRef<boolean>(true);
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
 
   const moreArticles = useCallback(async () => {
-    if (loadingRef.current) return;
+    if (loadingRef.current || !hasMoreRef.current) return;
     loadingRef.current = true;
 
     const result = selectedTags.length > 0 ?
@@ -52,9 +54,12 @@ function Articles() {
       const body = result.unwrap();
       setArticles((prev) => [...prev, ...body.items]);
 
-      if (body.nextCursor) {
+      if (body.nextCursor != null) {
         cursorRef.current = body.nextCursor;
+      } else {
+        hasMoreRef.current = false;
       }
+
     } else if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
     }
@@ -66,6 +71,7 @@ function Articles() {
   useEffect(() => {
     setArticles([]);
     cursorRef.current = null;
+    hasMoreRef.current = true;
   }, [selectedTags]);
 
   useEffect(() => {

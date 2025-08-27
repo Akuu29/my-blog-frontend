@@ -1,14 +1,10 @@
-import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { httpClient } from "./http-client";
+import Result from "../utils/result";
+import { requestSafely } from "../utils/request-safely";
+import type { ErrorResponse } from "../types/error-response";
 
 export class HelloWorldApi {
-  static async getHelloWorld(): Promise<string> {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/`,);
-      return response.data;
-    } catch (e) {
-      return "Error";
-    }
+  static async getHelloWorld(): Promise<Result<string, ErrorResponse>> {
+    return requestSafely<string>(httpClient.get("/"));
   }
 }
