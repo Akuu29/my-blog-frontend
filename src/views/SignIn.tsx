@@ -22,12 +22,13 @@ import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import type { UserStatusContextProps } from "../types/user-status-context";
 import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
 import { AuthApiContext } from '../contexts/AuthApiContext';
+import { extractUserIdFromAccessToken } from "../utils/jwt";
 
 const defaultTheme = createTheme();
 
 function SignIn() {
   const navigate = useNavigate();
-  const { updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
+  const { updateIsLoggedIn, updateCurrentUserId } = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const firebaseAuthApi = useContext(AuthApiContext) as FirebaseAuthApi;
 
@@ -66,6 +67,7 @@ function SignIn() {
           sendTokenToServiceWorker(accessToken);
 
           updateIsLoggedIn(true);
+          updateCurrentUserId(extractUserIdFromAccessToken(accessToken));
           navigate("/articles");
         }
 
