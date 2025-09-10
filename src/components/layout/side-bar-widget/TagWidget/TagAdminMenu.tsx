@@ -7,7 +7,12 @@ const OPTIONS = [
 const DELETE_CONFIRM_MESSAGE = `Deleted tags are also deleted from the associated articles.
 Are you sure you want to delete it?`;
 
-function TagAdminMenu({ deleteTag }: { deleteTag: () => void }) {
+type TagAdminMenuProps = {
+  deleteTag: () => void;
+  showAdminMenu?: boolean;
+};
+
+function TagAdminMenu({ deleteTag, showAdminMenu }: TagAdminMenuProps) {
   const handleClickMenuItem = (option: string) => {
     switch (option) {
       case "Delete":
@@ -21,7 +26,9 @@ function TagAdminMenu({ deleteTag }: { deleteTag: () => void }) {
   };
 
   return (
-    <LongMenu options={OPTIONS} clickMenuItemHandler={handleClickMenuItem} />
+    showAdminMenu && (
+      <LongMenu options={OPTIONS} clickMenuItemHandler={handleClickMenuItem} />
+    )
   );
 }
 

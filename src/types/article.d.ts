@@ -28,8 +28,10 @@ export type ArticleFilter = {
   status?: string;
   categoryId?: string;
   titleContains?: string;
+  userId?: string;
 };
 
 export type ArticlesByTagFilter = {
   tagIds: Array<string>;
+  userId?: string;
 };

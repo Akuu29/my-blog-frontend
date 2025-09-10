@@ -8,3 +8,7 @@ export type Tag = {
 export type NewTag = {
   name: string;
 };
+
+export type TagFilter = {
+  userId?: string;
+};

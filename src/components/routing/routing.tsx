@@ -4,11 +4,13 @@ import ErrorPage from "../layout/ErrorPage";
 import HelloWorld from "../../views/HelloWorld";
 import Top from "../../views/Top";
 import ArticlesByCategory from "../../views/ArticlesByCategory";
-import Articles from "../../views/Articles/Articles";
-import Article from "../../views/Article";
+import Articles from "../../views/Articles/Public/Articles";
+import Article from "../../views/Articles/Public/Article";
 import SignIn from "../../views/SignIn";
 import ArticleForm from "../../views/ArticleForm/ArticleForm";
 import SearchResults from "../../views/SearchResults";
+import ArticlesByUser from "../../views/Articles/User/ArticlesByUser";
+import ArticleByUser from "../../views/Articles/User/ArticleByUser";
 
 export const router = createBrowserRouter([
   {
@@ -52,6 +54,14 @@ export const router = createBrowserRouter([
         "path": "/search",
         element: <SearchResults />
       },
+      {
+        "path": "/user/:userId/articles",
+        element: <ArticlesByUser />
+      },
+      {
+        "path": "/user/:userId/article/:articleId",
+        element: <ArticleByUser />
+      }
     ]
   },
 ]);

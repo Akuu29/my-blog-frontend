@@ -67,8 +67,10 @@ function SignIn() {
           sendTokenToServiceWorker(accessToken);
 
           updateIsLoggedIn(true);
-          updateCurrentUserId(extractUserIdFromAccessToken(accessToken));
-          navigate("/articles");
+
+          const userId = extractUserIdFromAccessToken(accessToken);
+          updateCurrentUserId(userId);
+          navigate(`/user/${userId}/articles`);
         }
 
       } else if (result.isErr()) {
