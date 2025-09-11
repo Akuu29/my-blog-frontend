@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import MarkdownPreview from "@uiw/react-markdown-preview";
@@ -30,6 +30,9 @@ const theme = createTheme({
 function Top() {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
   const [recentArticles, setRecentArticles] = useState<Array<Article>>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -46,7 +49,7 @@ function Top() {
         const body = result.unwrap();
         setRecentArticles(body.items);
       } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
 
       setLoading(false);

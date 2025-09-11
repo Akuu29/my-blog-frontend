@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -7,8 +7,6 @@ import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 
 import PageLayout from "../components/layout/PageLayout";
-import CalendarWidget from "../components/layout/side-bar-widget/CalendarWidget/CalendarWidget";
-import CategoryWidget from "../components/layout/side-bar-widget/CategoryWidget/CategoryWidget";
 
 import ArticleApi from "../services/article-api";
 import handleError from "../utils/handle-error";
@@ -29,6 +27,9 @@ type ArticlesByCategory = {
 function ArticlesByCategory() {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
   const { categoryId } = useParams();
   const { categoryName } = useLocation().state;
   const [articlesByCategory, setArticlesByCategory] = useState<Array<ArticlesByCategory>>();
@@ -51,7 +52,7 @@ function ArticlesByCategory() {
           articleTitle: article.title,
         })));
       } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
     })();
   }, [categoryId, categoryName, navigate]);
@@ -62,13 +63,13 @@ function ArticlesByCategory() {
 
   const leftSideBar = (
     <Stack spacing={1}>
-      <CalendarWidget />
+      {/* reserved for future public widgets */}
     </Stack>
   );
 
   const rightSideBar = (
     <Stack spacing={1}>
-      <CategoryWidget />
+      {/* reserved for future public widgets */}
     </Stack>
   );
 

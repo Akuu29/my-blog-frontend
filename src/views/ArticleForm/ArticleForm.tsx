@@ -25,6 +25,7 @@ import type { Article, NewArticle, UpdateArticle, ArticleStatus } from "../../ty
 import type { Category } from "../../types/category";
 import type { Tag } from "../../types/tag";
 import type { Image } from "../../types/image";
+import type { PagedBody } from "../../types/paged-body";
 
 const theme = createTheme({
   typography: {
@@ -34,34 +35,43 @@ const theme = createTheme({
 
 function ArticleForm() {
   const navigate = useNavigate();
+
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
   const [title, setTitle] = useState<string>("");
   const [categoryName, setCategoryName] = useState<string | undefined>(undefined);
   const [existingCategories, setExistingCategories] = useState<Array<Category>>([]);
+
   const articleCreatedRef = useRef<boolean>(false);
   useEffect(() => {
     (async () => {
       const result = await CategoryApi.all({});
 
       if (result.isOk()) {
-        setExistingCategories(result.unwrap());
+        const body = result.unwrap();
+        setExistingCategories(body.items);
       } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
     })();
   }, [navigate]);
+
   const [existingTags, setExistingTags] = useState<Array<Tag>>([]);
   useEffect(() => {
     (async () => {
       const result = await TagApi.all();
 
       if (result.isOk()) {
-        setExistingTags(result.unwrap());
+        const body = result.unwrap();
+        setExistingTags(body.items);
       } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
     })();
   }, [navigate]);
+
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
   const [uploadedImages, setUploadedImages] = useState<Array<Image>>([]);
   const [body, setBody] = useState<string>("");
@@ -77,7 +87,7 @@ function ArticleForm() {
         };
         const result = await ArticleApi.create(newArticle);
         if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return;
         }
 
@@ -89,11 +99,11 @@ function ArticleForm() {
         const result = await CategoryApi.all({ id: categoryId });
 
         if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return Result.err(null);
         }
 
-        const categories = result.unwrap() as Array<Category>;
+        const categories = (result.unwrap() as PagedBody<Category>).items as Array<Category>;
 
         if (categories.length === 0) {
           return Result.err(null);
@@ -106,7 +116,7 @@ function ArticleForm() {
         const result = await TagApi.findTagsByArticleId(articleId);
 
         if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return Result.err(null);
         }
 
@@ -118,7 +128,7 @@ function ArticleForm() {
         const result = await ImageApi.all(articleId);
 
         if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return Result.err(null);
         }
 
@@ -129,7 +139,7 @@ function ArticleForm() {
         const findArticleResult = await ArticleApi.find(articleId);
 
         if (findArticleResult.isErr()) {
-          handleError(findArticleResult.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(findArticleResult.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return;
         }
 
@@ -178,7 +188,7 @@ function ArticleForm() {
       return Result.err(null);
     }
 
-    const categories = result.unwrap() as Array<Category>;
+    const categories = (result.unwrap() as PagedBody<Category>).items as Array<Category>;
 
     if (categories.length === 0) {
       // If the category does not exist, create a new category and return the id of the new category.

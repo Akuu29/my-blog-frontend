@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { format } from "date-fns";
@@ -32,6 +32,9 @@ type ArticleProps = {
 function ArticleDescription({ leftSideBar, rightSideBar, showAdminMenu }: ArticleProps) {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
   const { articleId } = useParams<{ articleId: string }>();
   const [article, setArticle] = useState<Article>();
 
@@ -46,10 +49,10 @@ function ArticleDescription({ leftSideBar, rightSideBar, showAdminMenu }: Articl
       if (result.isOk()) {
         setArticle(result.unwrap());
       } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
     })();
-  }, [articleId, navigate, openSnackbar]);
+  }, [articleId, navigate]);
 
   const deleteArticle = async () => {
     if (!articleId) {
