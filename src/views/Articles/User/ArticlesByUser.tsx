@@ -39,6 +39,9 @@ function ArticlesByUser() {
   const userName = (location.state as { userName?: string } | null)?.userName;
 
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const showAdminMenu = Boolean(userStatus.isLoggedIn && userStatus.currentUserId && userId && userStatus.currentUserId === userId);
 
@@ -55,28 +58,30 @@ function ArticlesByUser() {
 
     loadingRef.current = true;
 
-    const result = selectedTags.length > 0
-      ? await ArticleApi.findByTag({ tagIds: selectedTags.map(t => t.id), userId: userId as string }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE })
-      : await ArticleApi.all(
-        { status: "published", userId: userId },
-        { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }
-      );
+    try {
+      const result = selectedTags.length > 0
+        ? await ArticleApi.findByTag({ tagIds: selectedTags.map(t => t.id), userId: userId as string }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE })
+        : await ArticleApi.all(
+          { status: "Published", userId: userId },
+          { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }
+        );
 
-    if (result.isOk()) {
-      const body = result.unwrap();
-      setArticles((prev) => [...prev, ...body.items]);
+      if (result.isOk()) {
+        const body = result.unwrap();
+        setArticles((prev) => [...prev, ...body.items]);
 
-      if (body.nextCursor != null) {
-        cursorRef.current = body.nextCursor;
-      } else {
-        hasMoreRef.current = false;
+        if (body.nextCursor != null) {
+          cursorRef.current = body.nextCursor;
+        } else {
+          hasMoreRef.current = false;
+        }
+      } else if (result.isErr()) {
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
-    } else if (result.isErr()) {
-      handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+    } finally {
+      loadingRef.current = false;
     }
-
-    loadingRef.current = false;
-  }, [userId, selectedTags, navigate, openSnackbar]);
+  }, [userId, selectedTags, navigate]);
 
   useEffect(() => {
     setArticles([]);

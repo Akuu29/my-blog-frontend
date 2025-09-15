@@ -39,23 +39,27 @@ function Articles() {
     if (loadingRef.current || !hasMoreRef.current) return;
     loadingRef.current = true;
 
-    const result = await ArticleApi.all({ status: "published" }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE });
+    try {
+      const result = await ArticleApi.all(
+        { status: "published" },
+        { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }
+      );
 
-    if (result.isOk()) {
-      const body = result.unwrap();
-      setArticles((prev) => [...prev, ...body.items]);
+      if (result.isOk()) {
+        const body = result.unwrap();
+        setArticles((prev) => [...prev, ...body.items]);
 
-      if (body.nextCursor != null) {
-        cursorRef.current = body.nextCursor;
-      } else {
-        hasMoreRef.current = false;
+        if (body.nextCursor != null) {
+          cursorRef.current = body.nextCursor;
+        } else {
+          hasMoreRef.current = false;
+        }
+      } else if (result.isErr()) {
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
-
-    } else if (result.isErr()) {
-      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
+    } finally {
+      loadingRef.current = false;
     }
-
-    loadingRef.current = false;
   }, [navigate]);
 
   useEffect(() => {
