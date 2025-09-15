@@ -62,7 +62,12 @@ function CategoryWidget({ userId, showAdminMenu }: CategoryWidgetProps) {
     const result = await CategoryApi.delete(category.id);
 
     if (result.isOk()) {
-      setCategories(categories.filter((c) => c.id !== category.id));
+      const willBeLength = Math.max(0, categories.length - 1);
+      setCategories((prev) => prev.filter((c) => c.id !== category.id));
+      setTotal((prev) => Math.max(0, prev - 1));
+      if (willBeLength === 0 && page > 1) {
+        await loadPage(page - 1);
+      }
     } else if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
     }
@@ -180,6 +185,7 @@ function CategoryWidget({ userId, showAdminMenu }: CategoryWidgetProps) {
           category={category}
           updateCategoryHandler={updateCategory}
           deleteCategoryHandler={deleteCategory}
+          showAdminMenu={showAdminMenu}
           key={category.id}
         />
       ))}
