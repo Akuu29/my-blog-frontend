@@ -69,8 +69,20 @@ function SignIn() {
           updateIsLoggedIn(true);
 
           const userId = extractUserIdFromAccessToken(accessToken);
-          updateCurrentUserId(userId);
-          navigate(`/user/${userId}/articles`);
+          if (!userId) {
+            openSnackbar("top", "center", "User ID is not found");
+            updateCurrentUserId(null);
+            return;
+          }
+
+          const findUserResult = await UserApi.find(userId);
+          if (findUserResult.isOk()) {
+            const userName = findUserResult.value.name;
+            updateCurrentUserId(userId);
+            navigate(`/user/${userId}/articles`, { state: { userName: userName } });
+          } else if (findUserResult.isErr()) {
+            handleError(findUserResult.unwrap(), navigate, openSnackbar, "top", "center");
+          }
         }
 
       } else if (result.isErr()) {

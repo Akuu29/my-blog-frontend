@@ -23,4 +23,8 @@ export default class UserApi {
       { params: { ...(pagination ?? {}), ...(filter ?? {}) } }
     ));
   }
+
+  static async find(userId: string): Promise<Result<User, ErrorResponse>> {
+    return requestSafely<User>(httpClient.get(`/users/${userId}`));
+  }
 }
