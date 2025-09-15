@@ -36,15 +36,10 @@ function ArticlesByCategory() {
 
   useEffect(() => {
     (async () => {
-      const filter = {
-        status: "published",
-        categoryId: categoryId,
-      };
-      const pagination = {
-        cursor: null,
-        perPage: 20,
-      };
-      const result = await ArticleApi.all(filter, pagination);
+      const result = await ArticleApi.all(
+        { status: "published", categoryId: categoryId, },
+        { perPage: 20, }
+      );
 
       if (result.isOk()) {
         setArticlesByCategory(result.value.items.map((article) => ({

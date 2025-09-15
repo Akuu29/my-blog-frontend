@@ -1,4 +1,4 @@
-export type ArticleStatus = "Draft" | "Private" | "Published" | "Deleted";
+export type ArticleStatus = "draft" | "private" | "published" | "deleted";
 
 export type Article = {
   id: string;
@@ -25,7 +25,7 @@ export type UpdateArticle = {
 };
 
 export type ArticleFilter = {
-  status?: string;
+  status?: ArticleStatus;
   categoryId?: string;
   titleContains?: string;
   userId?: string;

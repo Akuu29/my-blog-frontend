@@ -83,7 +83,7 @@ function ArticleForm() {
       articleCreatedRef.current = true;
       (async () => {
         const newArticle: NewArticle = {
-          status: "Draft",
+          status: "draft",
         };
         const result = await ArticleApi.create(newArticle);
         if (result.isErr()) {
@@ -264,7 +264,7 @@ function ArticleForm() {
       return;
     }
 
-    const article = await saveArticle(articleId, "Published");
+    const article = await saveArticle(articleId, "published");
     if (article) {
       navigate(`/article/${article.id}`);
     }

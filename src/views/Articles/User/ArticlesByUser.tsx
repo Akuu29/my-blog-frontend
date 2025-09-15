@@ -62,7 +62,7 @@ function ArticlesByUser() {
       const result = selectedTags.length > 0
         ? await ArticleApi.findByTag({ tagIds: selectedTags.map(t => t.id), userId: userId as string }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE })
         : await ArticleApi.all(
-          { status: "Published", userId: userId },
+          { status: "published", userId: userId },
           { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }
         );
 
