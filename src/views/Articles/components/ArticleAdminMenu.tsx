@@ -1,4 +1,4 @@
-import LongMenu from "../../components/layout/LongMenu";
+import LongMenu from "../../../components/layout/LongMenu";
 
 const OPTIONS = [
   "Delete",

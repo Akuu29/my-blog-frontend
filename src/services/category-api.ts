@@ -3,12 +3,15 @@ import Result from "../utils/result";
 import { requestSafely } from "../utils/request-safely";
 import type { ErrorResponse } from "../types/error-response";
 import type { Category, NewCategory, UpdateCategory, CategoryFilter } from "../types/category";
+import type { Pagination } from "../types/pagination";
+import type { PagedBody } from "../types/paged-body";
+
 
 export default class CategoryApi {
-  static async all(categoryFilter?: CategoryFilter): Promise<Result<Array<Category>, ErrorResponse>> {
-    return requestSafely<Array<Category>>(httpClient.get(
+  static async all(categoryFilter?: CategoryFilter, pagination?: Pagination): Promise<Result<PagedBody<Category>, ErrorResponse>> {
+    return requestSafely<PagedBody<Category>>(httpClient.get(
       "/categories",
-      { params: { ...(categoryFilter ?? {}) } }
+      { params: { ...(pagination ?? {}), ...(categoryFilter ?? {}) } }
     ));
   }
 

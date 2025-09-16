@@ -7,17 +7,18 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 
-import type { Article } from "../../types/article";
+import type { Article } from "../../../types/article";
 
 type ArticleListProps = {
   articles: Array<Article>;
+  userId?: string;
 }
 
-function ArticleList({ articles }: ArticleListProps) {
+function ArticleList({ articles, userId }: ArticleListProps) {
   const navigate = useNavigate();
 
   const onClickArticle = (article: Article) => {
-    navigate(`/article/${article.id}`);
+    navigate(userId ? `/user/${userId}/article/${article.id}` : `/article/${article.id}`);
   };
 
   return (

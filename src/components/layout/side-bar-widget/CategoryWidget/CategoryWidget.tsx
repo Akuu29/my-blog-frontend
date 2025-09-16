@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -11,60 +11,83 @@ import Pagination from "@mui/material/Pagination";
 
 import CategoryApi from "../../../../services/category-api";
 import CategoryRow from "./CategoryRow";
-import { UserStatusContext } from "../../../../contexts/UserStatusContext";
 import { ErrorSnackbarContext } from "../../../../contexts/ErrorSnackbarContext";
 import handleError from "../../../../utils/handle-error";
 import Result from "../../../../utils/result";
-import type { ErrorResponse } from "../../../../types/error-response";
-import type { Category } from "../../../../types/category";
-import type { UserStatusContextProps } from "../../../../types/user-status-context";
+import type { Category, CategoryFilter } from "../../../../types/category";
 import type { ErrorSnackbarContextProps } from "../../../../types/error-snackbar-context";
-
 
 const CATEGORY_PER_PAGE = 5;
 
-function CategoryWidget() {
+type CategoryWidgetProps = {
+  userId: string;
+  showAdminMenu?: boolean;
+};
+
+function CategoryWidget({ userId, showAdminMenu }: CategoryWidgetProps) {
   const navigate = useNavigate();
-  const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
 
   const [categories, setCategories] = useState<Array<Category>>([]);
+  const [page, setPage] = useState<number>(1);
+  const [total, setTotal] = useState<number>(0);
+  const pageCount = Math.max(1, Math.ceil(total / CATEGORY_PER_PAGE));
+  const loadPage = useCallback(async (targetPage: number) => {
+    const offset = (targetPage - 1) * CATEGORY_PER_PAGE;
+    const result = await CategoryApi.all(
+      { userId } as CategoryFilter,
+      { offset, perPage: CATEGORY_PER_PAGE }
+    );
+
+    if (result.isOk()) {
+      const body = result.unwrap();
+      setCategories(body.items);
+      setTotal(body.total);
+      setPage(targetPage);
+    } else if (result.isErr()) {
+      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
+    }
+  }, [userId, navigate]);
+
   useEffect(() => {
     (async () => {
-      const result = await CategoryApi.all({});
-
-      if (result.isOk()) {
-        setCategories(result.unwrap());
-      } else {
-        handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
-      }
-
+      await loadPage(1);
     })();
 
-  }, [navigate]);
+  }, [navigate, userId, loadPage]);
 
   const deleteCategory = async (category: Category) => {
     const result = await CategoryApi.delete(category.id);
 
     if (result.isOk()) {
-      setCategories(categories.filter((c) => c.id !== category.id));
+      const willBeLength = Math.max(0, categories.length - 1);
+      setCategories((prev) => prev.filter((c) => c.id !== category.id));
+      setTotal((prev) => Math.max(0, prev - 1));
+      if (willBeLength === 0 && page > 1) {
+        await loadPage(page - 1);
+      }
     } else if (result.isErr()) {
-      handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
+      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
     }
   };
 
   const updateCategory = async (category: Category, editCategoryName: string): Promise<Result<null, null>> => {
     const result = await CategoryApi.update(category.id, { name: editCategoryName });
 
-    if (result.isOk()) {
-      setCategories(categories.map((c) => c.id === category.id ? result.unwrap() : c));
+    if (result.isErr()) {
+      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
 
-      return Result.ok(null);
+      return Result.err(null);
     }
 
-    handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
+    setCategories(
+      categories.map((c) => c.id === category.id ?
+        (result.unwrap() as Category) : c)
+    );
 
-    return Result.err(null);
+    return Result.ok(null);
   };
 
   const [addCategory, setAddCategory] = useState(false);
@@ -75,14 +98,9 @@ function CategoryWidget() {
     setAddCategory(false);
   };
 
-  const [page, setPage] = useState(1);
-  const handleChangePage = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
+  const handleChangePage = async (_event: React.ChangeEvent<unknown>, newPage: number) => {
+    await loadPage(newPage);
   };
-
-  const startIndex = (page - 1) * CATEGORY_PER_PAGE;
-  const endIndex = startIndex + CATEGORY_PER_PAGE;
-  const paginatedCategories = categories.slice(startIndex, endIndex);
 
   const [newCategory, setNewCategory] = useState<string>("");
 
@@ -106,7 +124,7 @@ function CategoryWidget() {
       setCategories((prev) => [...prev, result.unwrap()]);
       setNewCategory("");
     } else if (result.isErr()) {
-      handleError(result.unwrap() as ErrorResponse, navigate, openSnackbar, "top", "right");
+      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
     }
   };
 
@@ -125,18 +143,18 @@ function CategoryWidget() {
         }}>
           Category
         </Typography>
-        {userStatus.isLoggedIn && !addCategory && (
+        {showAdminMenu && !addCategory && (
           <IconButton onClick={handleClickAddIcon}>
             <AddIcon />
           </IconButton>
         )}
-        {userStatus.isLoggedIn && addCategory && (
+        {showAdminMenu && addCategory && (
           <IconButton onClick={handleClickRemoveIcon}>
             <RemoveIcon />
           </IconButton>
         )}
       </Box>
-      {userStatus.isLoggedIn && addCategory && (
+      {showAdminMenu && addCategory && (
         <Box
           component={"form"}
           onSubmit={handleSubmit}
@@ -162,22 +180,30 @@ function CategoryWidget() {
           </Button>
         </Box>
       )}
-      {paginatedCategories.map((category) => (
+      {categories.map((category) => (
         <CategoryRow
           category={category}
-          userStatus={userStatus}
           updateCategoryHandler={updateCategory}
           deleteCategoryHandler={deleteCategory}
+          showAdminMenu={showAdminMenu}
           key={category.id}
         />
       ))}
-      {categories.length > 0 && (
+      {pageCount > 1 && (
         <Box sx={{
           display: "flex",
           justifyContent: "center",
           mt: 2,
         }} >
-          <Pagination count={Math.ceil(categories.length / CATEGORY_PER_PAGE)} size="small" page={page} onChange={handleChangePage} />
+          <Pagination
+            count={pageCount}
+            page={page}
+            onChange={handleChangePage}
+            siblingCount={2}
+            boundaryCount={1}
+            color="primary"
+            size="small"
+          />
         </Box>
       )}
     </>

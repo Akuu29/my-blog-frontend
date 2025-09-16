@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
@@ -9,7 +9,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 
 import PageLayout from "../components/layout/PageLayout";
-import ArticleList from "./Articles/ArticleList";
+import ArticleList from "./Articles/components/ArticleList";
 import UserList from "./UserList";
 
 import ArticleApi from "../services/article-api";
@@ -31,6 +31,9 @@ type SearchType = 'articles' | 'users';
 function SearchResults() {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
   const [searchParams] = useSearchParams();
   const [articles, setArticles] = useState<Array<Article>>([]);
   const [users, setUsers] = useState<Array<User>>([]);
@@ -69,7 +72,7 @@ function SearchResults() {
         const body = articlesResult.unwrap();
         setArticles(body.items);
       } else if (articlesResult.isErr()) {
-        handleError(articlesResult.unwrap(), navigate, openSnackbar, "top", "center");
+        handleError(articlesResult.unwrap(), navigate, openSnackbarRef.current, "top", "center");
         setArticles([]);
       }
 
@@ -77,7 +80,7 @@ function SearchResults() {
         const body = usersResult.unwrap();
         setUsers(body.items);
       } else if (usersResult.isErr()) {
-        handleError(usersResult.unwrap(), navigate, openSnackbar, "top", "center");
+        handleError(usersResult.unwrap(), navigate, openSnackbarRef.current, "top", "center");
         setUsers([]);
       }
 

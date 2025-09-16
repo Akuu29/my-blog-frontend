@@ -2,15 +2,20 @@ import { httpClient } from "./http-client";
 import Result from "../utils/result";
 import { requestSafely } from "../utils/request-safely";
 import type { ErrorResponse } from "../types/error-response";
-import type { Tag, NewTag } from "../types/tag";
+import type { Tag, NewTag, TagFilter } from "../types/tag";
+import type { PagedBody } from "../types/paged-body";
+import type { Pagination } from "../types/pagination";
 
 export default class TagApi {
   static async create(new_tag: NewTag): Promise<Result<Tag, ErrorResponse>> {
     return requestSafely<Tag>(httpClient.post("/tags", new_tag));
   }
 
-  static async all(): Promise<Result<Array<Tag>, ErrorResponse>> {
-    return requestSafely<Array<Tag>>(httpClient.get("/tags"));
+  static async all(filter?: TagFilter, pagination?: Pagination): Promise<Result<PagedBody<Tag>, ErrorResponse>> {
+    return requestSafely<PagedBody<Tag>>(httpClient.get(
+      "/tags",
+      { params: { ...(pagination ?? {}), ...(filter ?? {}) } }
+    ));
   }
 
   static async delete(tag_id: string): Promise<Result<null, ErrorResponse>> {

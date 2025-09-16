@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
@@ -13,10 +14,9 @@ type UserListProps = {
 }
 
 function UserList({ users }: UserListProps) {
+  const navigate = useNavigate();
   const onClickUser = (user: User) => {
-    // TODO: user page
-    // navigate(`/user/${user.id}`);
-    console.log('User clicked:', user);
+    navigate(`/user/${user.id}/articles`, { state: { userName: user.name } });
   };
 
   return (

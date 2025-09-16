@@ -16,4 +16,5 @@ export type UpdateCategory = {
 export type CategoryFilter = {
   id?: string;
   name?: string;
+  userId?: string;
 };

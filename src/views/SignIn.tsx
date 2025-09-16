@@ -4,8 +4,8 @@ import { useContext } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+// import FormControlLabel from '@mui/material/FormControlLabel';
+// import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -22,12 +22,13 @@ import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import type { UserStatusContextProps } from "../types/user-status-context";
 import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
 import { AuthApiContext } from '../contexts/AuthApiContext';
+import { extractUserIdFromAccessToken } from "../utils/jwt";
 
 const defaultTheme = createTheme();
 
 function SignIn() {
   const navigate = useNavigate();
-  const { updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
+  const { updateIsLoggedIn, updateCurrentUserId } = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const firebaseAuthApi = useContext(AuthApiContext) as FirebaseAuthApi;
 
@@ -66,7 +67,22 @@ function SignIn() {
           sendTokenToServiceWorker(accessToken);
 
           updateIsLoggedIn(true);
-          navigate("/articles");
+
+          const userId = extractUserIdFromAccessToken(accessToken);
+          if (!userId) {
+            openSnackbar("top", "center", "User ID is not found");
+            updateCurrentUserId(null);
+            return;
+          }
+
+          const findUserResult = await UserApi.find(userId);
+          if (findUserResult.isOk()) {
+            const userName = findUserResult.value.name;
+            updateCurrentUserId(userId);
+            navigate(`/user/${userId}/articles`, { state: { userName: userName } });
+          } else if (findUserResult.isErr()) {
+            handleError(findUserResult.unwrap(), navigate, openSnackbar, "top", "center");
+          }
         }
 
       } else if (result.isErr()) {
@@ -113,10 +129,10 @@ function SignIn() {
               id="password"
               autoComplete="current-password"
             />
-            <FormControlLabel
+            {/* <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
-            />
+            /> */}
             <Button
               type="submit"
               fullWidth
