@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { ThemeProvider } from "@emotion/react";
 import { createTheme } from "@mui/material/styles";
@@ -17,7 +17,6 @@ import TagApi from "../../../../services/tag-api";
 import { UserStatusContext } from "../../../../contexts/UserStatusContext";
 import { ErrorSnackbarContext } from "../../../../contexts/ErrorSnackbarContext";
 import handleError from "../../../../utils/handle-error";
-import type { ErrorResponse } from "../../../../types/error-response";
 import type { UserStatusContextProps } from "../../../../types/user-status-context";
 import type { ErrorSnackbarContextProps } from "../../../../types/error-snackbar-context";
 import type { Tag, NewTag } from "../../../../types/tag";
@@ -29,27 +28,33 @@ const theme = createTheme({
 });
 
 type TagWidgetProps = {
-  setSelectedTags: (tag_ids: Array<Tag>) => void;
+  setSelectedTags: (tags: Array<Tag>) => void;
+  userId: string;
+  showAdminMenu?: boolean;
 };
 
-function TagWidget({ setSelectedTags }: TagWidgetProps) {
+function TagWidget({ setSelectedTags, userId, showAdminMenu }: TagWidgetProps) {
   const navigate = useNavigate();
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
   const [tags, setTags] = useState<Array<Tag>>([]);
   useEffect(() => {
     (async () => {
-      const result = await TagApi.all();
+      const result = await TagApi.all({ userId });
 
       if (result.isOk()) {
-        setTags(result.unwrap());
-      } else {
-        handleError((result.unwrap() as ErrorResponse), navigate, openSnackbar, "top", "right");
+        const body = result.unwrap();
+        setTags(body.items);
+      } else if (result.isErr()) {
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
       }
     })();
-  }, [navigate]);
+  }, [navigate, userId]);
 
-  const [selectedTagIds, setSelectedTagIds] = useState<Set<number>>(new Set());
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
 
   const [addTag, setAddTag] = useState(false);
   const onClickAddIcon = () => {
@@ -64,14 +69,23 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
     setNewTag({ name: event.target.value });
   };
 
-  const onSubmitNewTag = async () => {
-    const result = await TagApi.create(newTag);
+  const onSubmitNewTag = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const raw = data.get("tag");
+    const tagName = typeof raw === "string" ? raw.trim() : "";
+
+    if (!tagName) {
+      return;
+    }
+
+    const result = await TagApi.create({ name: tagName });
 
     if (result.isOk()) {
-      setTags([...tags, result.unwrap()]);
+      setTags((prev) => [...prev, result.unwrap()]);
       setNewTag({ name: "" });
-    } else {
-      handleError((result.unwrap() as ErrorResponse), navigate, openSnackbar, "top", "right");
+    } else if (result.isErr()) {
+      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
     }
   };
 
@@ -80,8 +94,8 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
 
     if (result.isOk()) {
       setTags(tags.filter((t) => t.id !== tag.id));
-    } else {
-      handleError((result.unwrap() as ErrorResponse), navigate, openSnackbar, "top", "right");
+    } else if (result.isErr()) {
+      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
     }
   };
 
@@ -107,7 +121,7 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
     }).filter((tag) => tag !== undefined) as Array<Tag>;
 
     setSelectedTags(selectedTags);
-  }, [selectedTagIds, tags]);
+  }, [selectedTagIds, tags, setSelectedTags]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -124,18 +138,18 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
         }}>
           Tag
         </Typography>
-        {userStatus.isLoggedIn && !addTag && (
+        {showAdminMenu && !addTag && (
           <IconButton onClick={onClickAddIcon}>
             <AddIcon />
           </IconButton>
         )}
-        {userStatus.isLoggedIn && addTag && (
+        {showAdminMenu && addTag && (
           <IconButton onClick={onClickRemoveIcon}>
             <RemoveIcon />
           </IconButton>
         )}
       </Box>
-      {userStatus.isLoggedIn && addTag && (
+      {userStatus.isLoggedIn && userId && userStatus.currentUserId === userId && addTag && (
         <Box
           component={"form"}
           onSubmit={onSubmitNewTag}
@@ -148,6 +162,7 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
           <TextField
             label="Add tag"
             variant="standard"
+            name="tag"
             value={newTag.name}
             onChange={onChangeNewTag}
             sx={{ flexGrow: 1, mr: 1, }}
@@ -169,9 +184,7 @@ function TagWidget({ setSelectedTags }: TagWidgetProps) {
             checked={selectedTagIds.has(tag.id)}
             onChange={() => onChangeTagCheckBox(tag, !selectedTagIds.has(tag.id))}
             adminMenu={
-              userStatus.isLoggedIn && (
-                <TagAdminMenu deleteTag={() => handleDeleteTag(tag)} />
-              )
+              <TagAdminMenu deleteTag={() => handleDeleteTag(tag)} showAdminMenu={showAdminMenu} />
             }
           />
         ))}

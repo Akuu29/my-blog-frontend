@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { format } from "date-fns";
@@ -7,20 +7,15 @@ import rehypeSanitize from "rehype-sanitize";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
 
-import PageLayout from "../components/layout/PageLayout";
-import CategoryWidget from "../components/layout/side-bar-widget/CategoryWidget/CategoryWidget";
-import CalendarWidget from "../components/layout/side-bar-widget/CalendarWidget/CalendarWidget";
-import ArticleAdminMenu from "./Articles/ArticleAdminMenu";
+import PageLayout from "../../../components/layout/PageLayout";
+import ArticleAdminMenu from "./ArticleAdminMenu";
 
-import ArticleApi from "../services/article-api";
-import handleError from "../utils/handle-error";
-import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
-import { UserStatusContext } from "../contexts/UserStatusContext";
-import type { Article } from "../types/article";
-import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
-import type { UserStatusContextProps } from "../types/user-status-context";
+import ArticleApi from "../../../services/article-api";
+import handleError from "../../../utils/handle-error";
+import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
+import type { Article } from "../../../types/article";
+import type { ErrorSnackbarContextProps } from "../../../types/error-snackbar-context";
 
 const theme = createTheme({
   typography: {
@@ -28,41 +23,43 @@ const theme = createTheme({
   },
 });
 
-function Article() {
+type ArticleProps = {
+  leftSideBar?: React.ReactNode;
+  rightSideBar?: React.ReactNode;
+  showAdminMenu?: boolean;
+};
+
+function ArticleDescription({ leftSideBar, rightSideBar, showAdminMenu }: ArticleProps) {
   const navigate = useNavigate();
-  const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const { article_id } = useParams<{ article_id: string }>();
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
+  const { articleId } = useParams<{ articleId: string }>();
   const [article, setArticle] = useState<Article>();
 
   useEffect(() => {
     (async () => {
-      if (article_id) {
-        const result = await ArticleApi.find(Number(article_id));
+      if (!articleId) {
+        return;
+      }
 
-        if (result.isOk()) {
-          setArticle(result.unwrap());
-        } else if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
-        }
+      const result = await ArticleApi.find(articleId);
+
+      if (result.isOk()) {
+        setArticle(result.unwrap());
+      } else if (result.isErr()) {
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
     })();
-  }, [article_id, navigate, openSnackbar]);
-
-  const leftSideBar = (
-    <Stack spacing={1}>
-      <CalendarWidget />
-    </Stack>
-  );
-
-  const rightSideBar = (
-    <Stack spacing={1}>
-      <CategoryWidget />
-    </Stack>
-  );
+  }, [articleId, navigate]);
 
   const deleteArticle = async () => {
-    const result = await ArticleApi.delete(Number(article_id));
+    if (!articleId) {
+      return;
+    }
+
+    const result = await ArticleApi.delete(articleId);
 
     if (result.isOk()) {
       navigate("/");
@@ -72,7 +69,7 @@ function Article() {
   };
 
   const editArticle = () => {
-    navigate(`/editor/${article_id}`);
+    navigate(`/editor/${articleId}`);
   };
 
   return (
@@ -92,7 +89,7 @@ function Article() {
                 <Typography variant="h4">
                   {article?.title}
                 </Typography>
-                {userStatus.isLoggedIn && (
+                {showAdminMenu && (
                   <ArticleAdminMenu
                     deleteArticle={deleteArticle}
                     editArticle={editArticle}
@@ -133,4 +130,4 @@ function Article() {
   );
 }
 
-export default Article;
+export default ArticleDescription;

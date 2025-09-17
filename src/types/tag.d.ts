@@ -1,5 +1,5 @@
 export type Tag = {
-  id: number;
+  id: string;
   name: string;
   createdAt: string;
   updatedAt: string;
@@ -7,4 +7,8 @@ export type Tag = {
 
 export type NewTag = {
   name: string;
+};
+
+export type TagFilter = {
+  userId?: string;
 };

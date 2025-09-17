@@ -12,7 +12,7 @@ const FIREBASE_MESSAGING_SENDER_ID = import.meta.env.VITE_FIREBASE_MESSAGING_SEN
 const FIREBASE_PUBLIC_APP_ID = import.meta.env.VITE_FIREBASE_PUBLIC_APP_ID;
 const FIREBASE_MEASUREMENT_ID = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID;
 
-export default class AuthApi {
+export default class FirebaseAuthApi {
   private readonly client: Auth;
 
   constructor() {
@@ -35,13 +35,18 @@ export default class AuthApi {
 
       return Result.ok(await response.user.getIdToken());
     } catch (err) {
-      const authError = err as AuthError;
-      const errorResponse: ErrorResponse = {
-        message: authError.message,
-        status: 400,
-      };
+      if ((err as AuthError)?.code === "auth/invalid-credential") {
+        const errorResponse: ErrorResponse = {
+          message: "Invalid credentials",
+          status: 400,
+        };
+        return Result.err(errorResponse);
+      }
 
-      return Result.err(errorResponse);
+      return Result.err({
+        message: "Unknown error occurred",
+        status: 500,
+      });
     }
   }
 }

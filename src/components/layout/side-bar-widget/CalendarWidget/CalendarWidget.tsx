@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import Accordion from "@mui/material/Accordion";
@@ -11,11 +11,13 @@ import ArticleApi from "../../../../services/article-api";
 import { Article } from "../../../../types/article";
 import handleError from "../../../../utils/handle-error";
 import { useNavigate } from "react-router-dom";
-import { useContext } from "react";
 import { ErrorSnackbarContext } from "../../../../contexts/ErrorSnackbarContext";
 import { ErrorSnackbarContextProps } from "../../../../types/error-snackbar-context";
 
-const MONTH_LIST = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTH_LIST = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
 const theme = createTheme({
   typography: {
@@ -23,23 +25,30 @@ const theme = createTheme({
   },
 });
 
-function CalendarWidget() {
+type CalendarWidgetProps = {
+  userId: string;
+};
+
+function CalendarWidget({ userId }: CalendarWidgetProps) {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
   const [articles, setArticles] = useState<Array<Article>>([]);
   useEffect(() => {
     (async () => {
-      const result = await ArticleApi.all({ status: "published" });
+      const result = await ArticleApi.all({ status: "published", userId });
 
       if (result.isOk()) {
         const body = result.unwrap();
         setArticles(body.items);
       } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbar, "top", "right");
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
         return;
       }
     })();
-  }, [navigate]);
+  }, [navigate, userId]);
 
   const [articlesByDate, setArticlesByDate] = useState<{ [key: string]: { [key: string]: Article[] } }>({});
 
@@ -65,8 +74,8 @@ function CalendarWidget() {
     setArticlesByDate(groupedArticles);
   }, [articles]);
 
-  const handleClickArticle = (articleId: number) => {
-    navigate(`/article/${articleId}`);
+  const handleClickArticle = (articleId: string) => {
+    navigate(`/user/${userId}/article/${articleId}`);
   };
 
   return (

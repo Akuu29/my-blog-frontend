@@ -1,5 +1,5 @@
 export type Category = {
-  id: number;
+  id: string;
   name: string;
   createdAt: string;
   updatedAt: string;
@@ -13,13 +13,8 @@ export type UpdateCategory = {
   name: string;
 };
 
-export type ArticlesByCategory = {
-  article_id: number;
-  article_title: string;
-  category_name: string;
-};
-
 export type CategoryFilter = {
-  id?: number;
+  id?: string;
   name?: string;
+  userId?: string;
 };

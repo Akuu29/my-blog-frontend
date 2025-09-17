@@ -13,7 +13,6 @@ import Result from "../../utils/result";
 import ArticleApi from "../../services/article-api";
 import CategoryApi from "../../services/category-api";
 import TagApi from "../../services/tag-api";
-import ArticleTagsApi from "../../services/article-tags-api";
 import ImageApi from "../../services/image-api";
 import { ErrorSnackbarContext } from "../../contexts/ErrorSnackbarContext";
 import ArticleField from "./ArticleField";
@@ -25,8 +24,8 @@ import type { ErrorSnackbarContextProps } from "../../types/error-snackbar-conte
 import type { Article, NewArticle, UpdateArticle, ArticleStatus } from "../../types/article";
 import type { Category } from "../../types/category";
 import type { Tag } from "../../types/tag";
-import type { ArticleTag } from "../../types/article-tag";
 import type { Image } from "../../types/image";
+import type { PagedBody } from "../../types/paged-body";
 
 const theme = createTheme({
   typography: {
@@ -36,66 +35,75 @@ const theme = createTheme({
 
 function ArticleForm() {
   const navigate = useNavigate();
+
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const openSnackbarRef = useRef(openSnackbar);
+  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
   const [title, setTitle] = useState<string>("");
   const [categoryName, setCategoryName] = useState<string | undefined>(undefined);
   const [existingCategories, setExistingCategories] = useState<Array<Category>>([]);
+
   const articleCreatedRef = useRef<boolean>(false);
   useEffect(() => {
     (async () => {
       const result = await CategoryApi.all({});
 
       if (result.isOk()) {
-        setExistingCategories(result.unwrap());
+        const body = result.unwrap();
+        setExistingCategories(body.items);
       } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
     })();
   }, [navigate]);
+
   const [existingTags, setExistingTags] = useState<Array<Tag>>([]);
   useEffect(() => {
     (async () => {
       const result = await TagApi.all();
 
       if (result.isOk()) {
-        setExistingTags(result.unwrap());
+        const body = result.unwrap();
+        setExistingTags(body.items);
       } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
     })();
   }, [navigate]);
+
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
   const [uploadedImages, setUploadedImages] = useState<Array<Image>>([]);
   const [body, setBody] = useState<string>("");
 
-  const { article_id } = useParams();
+  const { articleId } = useParams();
   useEffect(() => {
-    if (!article_id && !articleCreatedRef.current) {
+    if (!articleId && !articleCreatedRef.current) {
       // create an empty article to link image to the article
       articleCreatedRef.current = true;
       (async () => {
         const newArticle: NewArticle = {
-          status: "Draft",
+          status: "draft",
         };
         const result = await ArticleApi.create(newArticle);
         if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return;
         }
 
         const article = result.unwrap() as Article;
         navigate(`/editor/${article.id}`);
       })();
-    } else if (article_id) {
-      const getCategoryName = async (category_id: number): Promise<Result<string, null>> => {
-        const result = await CategoryApi.all({ id: category_id });
+    } else if (articleId) {
+      const getCategoryName = async (categoryId: string): Promise<Result<string, null>> => {
+        const result = await CategoryApi.all({ id: categoryId });
 
         if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return Result.err(null);
         }
 
-        const categories = result.unwrap() as Array<Category>;
+        const categories = (result.unwrap() as PagedBody<Category>).items as Array<Category>;
 
         if (categories.length === 0) {
           return Result.err(null);
@@ -104,11 +112,11 @@ function ArticleForm() {
         return Result.ok(categories[0].name);
       };
 
-      const getTags = async (article_id: number): Promise<Result<Array<Tag>, null>> => {
-        const result = await TagApi.find_tags_by_article_id(article_id);
+      const getTags = async (articleId: string): Promise<Result<Array<Tag>, null>> => {
+        const result = await TagApi.findTagsByArticleId(articleId);
 
         if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return Result.err(null);
         }
 
@@ -116,11 +124,11 @@ function ArticleForm() {
         return Result.ok(articleTags);
       };
 
-      const getImages = async (articleId: number): Promise<Result<Array<Image>, null>> => {
+      const getImages = async (articleId: string): Promise<Result<Array<Image>, null>> => {
         const result = await ImageApi.all(articleId);
 
         if (result.isErr()) {
-          handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return Result.err(null);
         }
 
@@ -128,10 +136,10 @@ function ArticleForm() {
       };
 
       (async () => {
-        const findArticleResult = await ArticleApi.find(Number(article_id));
+        const findArticleResult = await ArticleApi.find(articleId);
 
         if (findArticleResult.isErr()) {
-          handleError(findArticleResult.unwrap(), navigate, openSnackbar, "top", "center");
+          handleError(findArticleResult.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return;
         }
 
@@ -149,7 +157,7 @@ function ArticleForm() {
           setCategoryName(getCategoryNameResult.unwrap() as string);
         }
 
-        const getTagsResult = await getTags(Number(article_id));
+        const getTagsResult = await getTags(articleId);
 
         if (getTagsResult.isErr()) {
           return;
@@ -157,7 +165,7 @@ function ArticleForm() {
 
         setSelectedTags(getTagsResult.unwrap() as Array<Tag>);
 
-        const getImagesResult = await getImages(Number(article_id));
+        const getImagesResult = await getImages(articleId);
 
         if (getImagesResult.isErr()) {
           return;
@@ -166,9 +174,9 @@ function ArticleForm() {
         setUploadedImages(getImagesResult.unwrap() as Array<Image>);
       })();
     }
-  }, [article_id, navigate, openSnackbar]);
+  }, [articleId, navigate]);
 
-  const getCategoryId = async (): Promise<Result<number | null, null>> => {
+  const getCategoryId = async (): Promise<Result<string | null, null>> => {
     if (!categoryName) {
       return Result.ok(null);
     }
@@ -180,7 +188,7 @@ function ArticleForm() {
       return Result.err(null);
     }
 
-    const categories = result.unwrap() as Array<Category>;
+    const categories = (result.unwrap() as PagedBody<Category>).items as Array<Category>;
 
     if (categories.length === 0) {
       // If the category does not exist, create a new category and return the id of the new category.
@@ -198,15 +206,15 @@ function ArticleForm() {
     return Result.ok(categories[0].id);
   };
 
-  const updateArticle = async (article_id: number, articleStatus: ArticleStatus, category_id: number | null): Promise<Result<Article, null>> => {
+  const updateArticle = async (articleId: string, articleStatus: ArticleStatus, categoryId: string | null): Promise<Result<Article, null>> => {
     const updatedArticle: UpdateArticle = {
       title,
       body,
       status: articleStatus,
-      categoryId: category_id,
+      categoryId: categoryId,
     };
 
-    const result = await ArticleApi.update(article_id, updatedArticle);
+    const result = await ArticleApi.update(articleId, updatedArticle);
 
     if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
@@ -217,26 +225,25 @@ function ArticleForm() {
     return Result.ok(article);
   };
 
-  const attachTags = async (article_id: number, selectedTags: Array<Tag>): Promise<Result<Array<ArticleTag>, null>> => {
-    const result = await ArticleTagsApi.attachTags(article_id, selectedTags.map((tag) => tag.id));
+  const attachTags = async (articleId: string, selectedTags: Array<Tag>): Promise<Result<null, null>> => {
+    const result = await ArticleApi.attachTags(articleId, selectedTags.map((tag) => tag.id));
 
     if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
       return Result.err(null);
     }
 
-    const articleTags = result.unwrap() as Array<ArticleTag>;
-    return Result.ok(articleTags);
+    return Result.ok(null);
   };
 
-  const saveArticle = async (ArticleStatus: ArticleStatus) => {
+  const saveArticle = async (articleId: string, ArticleStatus: ArticleStatus) => {
     const getCategoryIdResult = await getCategoryId();
     if (getCategoryIdResult.isErr()) {
       return;
     }
-    const category_id = getCategoryIdResult.unwrap();
+    const categoryId = getCategoryIdResult.unwrap();
 
-    const updateArticleResult = await updateArticle(Number(article_id), ArticleStatus, category_id);
+    const updateArticleResult = await updateArticle(articleId, ArticleStatus, categoryId);
     if (updateArticleResult.isErr()) {
       return;
     }
@@ -253,7 +260,11 @@ function ArticleForm() {
   };
 
   const handleSave = async () => {
-    const article = await saveArticle("Published");
+    if (!articleId) {
+      return;
+    }
+
+    const article = await saveArticle(articleId, "published");
     if (article) {
       navigate(`/article/${article.id}`);
     }
@@ -294,7 +305,7 @@ function ArticleForm() {
           <ArticleTagSelector existingTags={existingTags} selectedTags={selectedTags} setSelectedTags={setSelectedTags} />
         </ArticleField>
         <ArticleField>
-          <ArticleImageUploader articleId={article_id} uploadedImages={uploadedImages} setUploadedImages={setUploadedImages} onImageUpload={handleImageUpload} onDeleteImage={handleDeleteImage} />
+          <ArticleImageUploader articleId={articleId} uploadedImages={uploadedImages} setUploadedImages={setUploadedImages} onImageUpload={handleImageUpload} onDeleteImage={handleDeleteImage} />
         </ArticleField>
         <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
           <Button

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { UserStatusContextProps } from "../../../../types/user-status-context";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
@@ -18,23 +17,25 @@ const OPTIONS = [
 const DELETE_CONFIRM_MESSAGE = `Articles in this category will be moved to "None".
 Are you sure you want to delete it?`;
 
+type CategoryRowProps = {
+  category: Category;
+  updateCategoryHandler: (category: Category, editCategoryName: string) => Promise<Result<null, null>>;
+  deleteCategoryHandler: (category: Category) => void;
+  showAdminMenu?: boolean;
+};
+
 function CategoryRow({
   category,
-  userStatus,
   updateCategoryHandler,
   deleteCategoryHandler,
-}: {
-  category: Category,
-  userStatus: UserStatusContextProps,
-  updateCategoryHandler: (category: Category, editCategoryName: string) => Promise<Result<null, null>>,
-  deleteCategoryHandler: (category: Category) => void,
-}) {
+  showAdminMenu,
+}: CategoryRowProps) {
   const navigate = useNavigate();
   const [isEdit, setIsEdit] = useState(false);
   const [editCategoryName, setEditCategoryName] = useState(category.name);
 
   const handleClickCategory = () => {
-    navigate(`/category/${category.name}`);
+    navigate(`/category/${category.id}/articles`, { state: { categoryName: category.name } });
   };
 
   const handleChangeEditCategoryName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +107,7 @@ function CategoryRow({
           </Link>
         )}
       </Box>
-      {userStatus.isLoggedIn && (
+      {showAdminMenu && (
         <LongMenu options={OPTIONS} clickMenuItemHandler={handleClickMenuItem} />
       )}
     </Box>
