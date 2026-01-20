@@ -76,9 +76,8 @@ function Header() {
 
   const onClickMenuItem = (item: MenuItem) => {
     match(item)
-      .with('Profile', () => {
-        // TODO: Implement profile page
-        alert('Profile');
+      .with('Settings', () => {
+        navigate('/settings');
       })
       .with('MyArticles', () => {
         navigate('/myarticles');

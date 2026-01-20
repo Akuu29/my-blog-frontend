@@ -27,4 +27,8 @@ export default class UserApi {
   static async find(userId: string): Promise<Result<User, ErrorResponse>> {
     return requestSafely<User>(httpClient.get(`/users/${userId}`));
   }
+
+  static async update(userId: string, data: { name: string }): Promise<Result<User, ErrorResponse>> {
+    return requestSafely<User>(httpClient.patch(`/users/${userId}`, data));
+  }
 }
