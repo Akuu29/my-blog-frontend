@@ -15,6 +15,7 @@ import CategoryApi from "../../services/category-api";
 import TagApi from "../../services/tag-api";
 import ImageApi from "../../services/image-api";
 import { ErrorSnackbarContext } from "../../contexts/ErrorSnackbarContext";
+import { UserStatusContext } from "../../contexts/UserStatusContext";
 import ArticleField from "./ArticleField";
 import ArticleTitleInput from "./ArticleTitleInput";
 import ArticleCategorySelector from "./ArticleCategorySelector";
@@ -26,6 +27,7 @@ import type { Category } from "../../types/category";
 import type { Tag } from "../../types/tag";
 import type { Image } from "../../types/image";
 import type { PagedBody } from "../../types/paged-body";
+import type { UserStatusContextProps } from "../../types/user-status-context";
 
 const theme = createTheme({
   typography: {
@@ -35,7 +37,7 @@ const theme = createTheme({
 
 function ArticleForm() {
   const navigate = useNavigate();
-
+  const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const openSnackbarRef = useRef(openSnackbar);
   useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
@@ -47,7 +49,7 @@ function ArticleForm() {
   const articleCreatedRef = useRef<boolean>(false);
   useEffect(() => {
     (async () => {
-      const result = await CategoryApi.all({});
+      const result = await CategoryApi.all({ userId: userStatus.currentUserId! });
 
       if (result.isOk()) {
         const body = result.unwrap();
@@ -56,12 +58,12 @@ function ArticleForm() {
         handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
     })();
-  }, [navigate]);
+  }, [userStatus.currentUserId, navigate]);
 
   const [existingTags, setExistingTags] = useState<Array<Tag>>([]);
   useEffect(() => {
     (async () => {
-      const result = await TagApi.all();
+      const result = await TagApi.all({ userId: userStatus.currentUserId! });
 
       if (result.isOk()) {
         const body = result.unwrap();
@@ -70,7 +72,7 @@ function ArticleForm() {
         handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
       }
     })();
-  }, [navigate]);
+  }, [userStatus.currentUserId, navigate]);
 
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
   const [uploadedImages, setUploadedImages] = useState<Array<Image>>([]);
@@ -266,7 +268,7 @@ function ArticleForm() {
 
     const article = await saveArticle(articleId, "published");
     if (article) {
-      navigate(`/article/${article.id}`);
+      navigate(`/myarticles`);
     }
   };
 

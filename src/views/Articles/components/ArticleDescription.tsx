@@ -6,11 +6,8 @@ import MarkdownPreview from "@uiw/react-markdown-preview";
 import rehypeSanitize from "rehype-sanitize";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
 
 import PageLayout from "../../../components/layout/PageLayout";
-import ArticleAdminMenu from "./ArticleAdminMenu";
-
 import ArticleApi from "../../../services/article-api";
 import handleError from "../../../utils/handle-error";
 import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
@@ -26,10 +23,9 @@ const theme = createTheme({
 type ArticleProps = {
   leftSideBar?: React.ReactNode;
   rightSideBar?: React.ReactNode;
-  showAdminMenu?: boolean;
 };
 
-function ArticleDescription({ leftSideBar, rightSideBar, showAdminMenu }: ArticleProps) {
+function ArticleDescription({ leftSideBar, rightSideBar }: ArticleProps) {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const openSnackbarRef = useRef(openSnackbar);
@@ -54,24 +50,6 @@ function ArticleDescription({ leftSideBar, rightSideBar, showAdminMenu }: Articl
     })();
   }, [articleId, navigate]);
 
-  const deleteArticle = async () => {
-    if (!articleId) {
-      return;
-    }
-
-    const result = await ArticleApi.delete(articleId);
-
-    if (result.isOk()) {
-      navigate("/");
-    } else if (result.isErr()) {
-      handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
-    }
-  };
-
-  const editArticle = () => {
-    navigate(`/editor/${articleId}`);
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <Grid container>
@@ -81,21 +59,9 @@ function ArticleDescription({ leftSideBar, rightSideBar, showAdminMenu }: Articl
         >
           <Grid container spacing={1} alignItems={"flex-end"} sx={{ padding: 2 }}>
             <Grid item xs={12}>
-              <Box sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}>
-                <Typography variant="h4">
-                  {article?.title}
-                </Typography>
-                {showAdminMenu && (
-                  <ArticleAdminMenu
-                    deleteArticle={deleteArticle}
-                    editArticle={editArticle}
-                  />
-                )}
-              </Box>
+              <Typography variant="h4">
+                {article?.title}
+              </Typography>
             </Grid>
             {article?.createdAt && (
               <Grid item xs={6}>

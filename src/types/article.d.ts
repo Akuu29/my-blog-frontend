@@ -34,4 +34,5 @@ export type ArticleFilter = {
 export type ArticlesByTagFilter = {
   tagIds: Array<string>;
   userId?: string;
+  articleStatus?: ArticleStatus;
 };

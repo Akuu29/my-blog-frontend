@@ -23,9 +23,9 @@ import { ErrorSnackbarContext } from '../../contexts/ErrorSnackbarContext';
 import type { UserStatusContextProps } from "../../types/user-status-context";
 import type { ErrorSnackbarContextProps } from '../../types/error-snackbar-context';
 
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['Settings', 'MyArticles', 'Logout'];
 
-type MenuItem = 'Profile' | 'Account' | 'Dashboard' | 'Logout';
+type MenuItem = 'Settings' | 'MyArticles' | 'Logout';
 
 function Header() {
   const { isLoggedIn, updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
@@ -80,13 +80,8 @@ function Header() {
         // TODO: Implement profile page
         alert('Profile');
       })
-      .with('Account', () => {
-        // TODO: Implement account page
-        alert('Account');
-      })
-      .with('Dashboard', () => {
-        // TODO: Dashboard page
-        alert('Dashboard');
+      .with('MyArticles', () => {
+        navigate('/myarticles');
       })
       .with('Logout', () => {
         logout();

@@ -1,5 +1,5 @@
 export type User = {
-  id: number;
+  id: string; // UUID v4
   name: string;
 };
 

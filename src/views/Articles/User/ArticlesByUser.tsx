@@ -4,8 +4,6 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import AddIcon from "@mui/icons-material/Add";
 
 import PageLayout from "../../../components/layout/PageLayout";
 import CalendarWidget from "../../../components/layout/side-bar-widget/CalendarWidget/CalendarWidget";
@@ -32,18 +30,25 @@ const theme = createTheme({
 
 const ARTICLES_PER_PAGE = 7;
 
-function ArticlesByUser() {
+interface ArticlesByUserProps {
+  userId?: string;
+  userName?: string;
+}
+
+function ArticlesByUser(props?: ArticlesByUserProps) {
   const navigate = useNavigate();
-  const { userId } = useParams();
+  const { userId: userIdFromParams } = useParams();
   const location = useLocation();
-  const userName = (location.state as { userName?: string } | null)?.userName;
+  const userNameFromState = (location.state as { userName?: string } | null)?.userName;
+
+  const userId = props?.userId ?? userIdFromParams;
+  const userName = props?.userName ?? userNameFromState;
 
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const openSnackbarRef = useRef(openSnackbar);
   useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
 
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
-  const showAdminMenu = Boolean(userStatus.isLoggedIn && userStatus.currentUserId && userId && userStatus.currentUserId === userId);
 
   const [articles, setArticles] = useState<Array<Article>>([]);
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
@@ -122,8 +127,8 @@ function ArticlesByUser() {
 
   const rightSideBar = (
     <Stack spacing={1}>
-      {userId && <CategoryWidget userId={userId} showAdminMenu={showAdminMenu} />}
-      {userId && <TagWidget setSelectedTags={setSelectedTags} userId={userId} showAdminMenu={showAdminMenu} />}
+      {userId && <CategoryWidget userId={userId} showAdminMenu={false} />}
+      {userId && <TagWidget setSelectedTags={setSelectedTags} userId={userId} showAdminMenu={false} />}
     </Stack>
   );
 
@@ -140,18 +145,6 @@ function ArticlesByUser() {
               {`${userName}'s Public Articles`}
             </Typography>
           </Box>
-          {/* Add New Article Button */}
-          {showAdminMenu && (
-            <IconButton
-              disableRipple={true}
-              sx={{ cursor: "pointer" }}
-              onClick={() => { navigate("/editor"); }}>
-              <AddIcon />
-              <Typography sx={{ fontWeight: 600 }}>
-                Add New Article
-              </Typography>
-            </IconButton>
-          )}
           {/* Article List */}
           <ArticleList articles={articles} userId={userId} />
         </Stack>
