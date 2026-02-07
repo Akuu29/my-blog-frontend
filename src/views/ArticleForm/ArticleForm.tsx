@@ -251,11 +251,9 @@ function ArticleForm() {
     }
     const article = updateArticleResult.unwrap() as Article;
 
-    if (selectedTags.length > 0) {
-      const articleTagsResult = await attachTags(article.id, selectedTags);
-      if (articleTagsResult.isErr()) {
-        return;
-      }
+    const articleTagsResult = await attachTags(article.id, selectedTags);
+    if (articleTagsResult.isErr()) {
+      return;
     }
 
     return article;
