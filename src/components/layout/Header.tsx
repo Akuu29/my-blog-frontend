@@ -28,7 +28,7 @@ const settings = ['Settings', 'MyArticles', 'Logout'];
 type MenuItem = 'Settings' | 'MyArticles' | 'Logout';
 
 function Header() {
-  const { isLoggedIn, updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
+  const { isLoggedIn, currentUserName, updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const navigate = useNavigate();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -98,7 +98,9 @@ function Header() {
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 1 }}>
-                <Avatar alt="Unknown" src="/static/images/avatar/2.jpg" />
+                <Avatar alt={currentUserName || "User"}>
+                  {currentUserName?.charAt(0).toUpperCase() || "U"}
+                </Avatar>
               </IconButton>
             </Tooltip>
             <Menu
