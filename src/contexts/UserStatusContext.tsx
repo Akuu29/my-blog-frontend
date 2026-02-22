@@ -30,12 +30,6 @@ export function UserStatusContextProvider({ children }: { children: ReactNode })
 
         if (result.isOk()) {
           const credentials = result.unwrap();
-          const accessToken = credentials.accessToken;
-
-          navigator.serviceWorker.controller?.postMessage({
-            type: "SET_ACCESS_TOKEN",
-            message: accessToken,
-          });
 
           setIsLoggedIn(true);
           setCurrentUserId(credentials.user.id);

@@ -31,22 +31,6 @@ function SignIn() {
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const firebaseAuthApi = useContext(AuthApiContext) as FirebaseAuthApi;
 
-  const sendTokenToServiceWorker = (token: string) => {
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: "SET_ACCESS_TOKEN",
-        message: token,
-      });
-    } else {
-      navigator.serviceWorker.ready.then(registration => {
-        registration.active?.postMessage({
-          type: "SET_ACCESS_TOKEN",
-          message: token,
-        });
-      });
-    }
-  };
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -61,10 +45,8 @@ function SignIn() {
         const verifyResult = await UserApi.signIn(result.value);
 
         if (verifyResult.isOk()) {
-          const { accessToken, user } = verifyResult.unwrap();
+          const { user } = verifyResult.unwrap();
           const userId = user.id;
-
-          sendTokenToServiceWorker(accessToken);
 
           updateIsLoggedIn(true);
 
