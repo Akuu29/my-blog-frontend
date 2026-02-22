@@ -15,11 +15,9 @@ import ArticleApi from "../../../services/article-api";
 import handleError from "../../../utils/handle-error";
 import { useEffect as useEffectReact } from "react";
 import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
-import { UserStatusContext } from "../../../contexts/UserStatusContext";
 import type { Article } from "../../../types/article";
 import type { ErrorSnackbarContextProps } from "../../../types/error-snackbar-context";
 import type { Tag } from "../../../types/tag";
-import type { UserStatusContextProps } from "../../../types/user-status-context";
 import type { Cursor } from "../../../types/paged-body";
 
 const theme = createTheme({
@@ -47,8 +45,6 @@ function ArticlesByUser(props?: ArticlesByUserProps) {
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const openSnackbarRef = useRef(openSnackbar);
   useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
-
-  const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
 
   const [articles, setArticles] = useState<Array<Article>>([]);
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
