@@ -11,6 +11,9 @@ import ArticleForm from "../../views/ArticleForm/ArticleForm";
 import SearchResults from "../../views/SearchResults";
 import ArticlesByUser from "../../views/Articles/User/ArticlesByUser";
 import ArticleByUser from "../../views/Articles/User/ArticleByUser";
+import MyArticles from "../../views/MyArticles";
+import Settings from "../../views/Settings";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
@@ -44,15 +47,23 @@ export const router = createBrowserRouter([
       },
       {
         "path": "/editor",
-        element: <ArticleForm />
+        element: <ProtectedRoute><ArticleForm /></ProtectedRoute>
       },
       {
         "path": "/editor/:articleId",
-        element: <ArticleForm />
+        element: <ProtectedRoute><ArticleForm /></ProtectedRoute>
       },
       {
         "path": "/search",
         element: <SearchResults />
+      },
+      {
+        "path": "/settings",
+        element: <ProtectedRoute><Settings /></ProtectedRoute>
+      },
+      {
+        "path": "/myarticles",
+        element: <ProtectedRoute><MyArticles /></ProtectedRoute>
       },
       {
         "path": "/user/:userId/articles",

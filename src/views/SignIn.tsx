@@ -22,7 +22,6 @@ import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import type { UserStatusContextProps } from "../types/user-status-context";
 import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
 import { AuthApiContext } from '../contexts/AuthApiContext';
-import { extractUserIdFromAccessToken } from "../utils/jwt";
 
 const defaultTheme = createTheme();
 
@@ -31,22 +30,6 @@ function SignIn() {
   const { updateIsLoggedIn, updateCurrentUserId } = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const firebaseAuthApi = useContext(AuthApiContext) as FirebaseAuthApi;
-
-  const sendTokenToServiceWorker = (token: string) => {
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: "SET_ACCESS_TOKEN",
-        message: token,
-      });
-    } else {
-      navigator.serviceWorker.ready.then(registration => {
-        registration.active?.postMessage({
-          type: "SET_ACCESS_TOKEN",
-          message: token,
-        });
-      });
-    }
-  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -62,27 +45,19 @@ function SignIn() {
         const verifyResult = await UserApi.signIn(result.value);
 
         if (verifyResult.isOk()) {
-          const { accessToken } = verifyResult.value;
-
-          sendTokenToServiceWorker(accessToken);
+          const { user } = verifyResult.unwrap();
+          const userId = user.id;
 
           updateIsLoggedIn(true);
 
-          const userId = extractUserIdFromAccessToken(accessToken);
           if (!userId) {
             openSnackbar("top", "center", "User ID is not found");
             updateCurrentUserId(null);
             return;
           }
 
-          const findUserResult = await UserApi.find(userId);
-          if (findUserResult.isOk()) {
-            const userName = findUserResult.value.name;
-            updateCurrentUserId(userId);
-            navigate(`/user/${userId}/articles`, { state: { userName: userName } });
-          } else if (findUserResult.isErr()) {
-            handleError(findUserResult.unwrap(), navigate, openSnackbar, "top", "center");
-          }
+          updateCurrentUserId(userId);
+          navigate('/myarticles');
         }
 
       } else if (result.isErr()) {

@@ -23,12 +23,12 @@ import { ErrorSnackbarContext } from '../../contexts/ErrorSnackbarContext';
 import type { UserStatusContextProps } from "../../types/user-status-context";
 import type { ErrorSnackbarContextProps } from '../../types/error-snackbar-context';
 
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['Settings', 'MyArticles', 'Logout'];
 
-type MenuItem = 'Profile' | 'Account' | 'Dashboard' | 'Logout';
+type MenuItem = 'Settings' | 'MyArticles' | 'Logout';
 
 function Header() {
-  const { isLoggedIn, updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
+  const { isLoggedIn, currentUserName, updateIsLoggedIn } = useContext(UserStatusContext) as UserStatusContextProps;
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const navigate = useNavigate();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -76,17 +76,11 @@ function Header() {
 
   const onClickMenuItem = (item: MenuItem) => {
     match(item)
-      .with('Profile', () => {
-        // TODO: Implement profile page
-        alert('Profile');
+      .with('Settings', () => {
+        navigate('/settings');
       })
-      .with('Account', () => {
-        // TODO: Implement account page
-        alert('Account');
-      })
-      .with('Dashboard', () => {
-        // TODO: Dashboard page
-        alert('Dashboard');
+      .with('MyArticles', () => {
+        navigate('/myarticles');
       })
       .with('Logout', () => {
         logout();
@@ -104,7 +98,9 @@ function Header() {
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 1 }}>
-                <Avatar alt="Unknown" src="/static/images/avatar/2.jpg" />
+                <Avatar alt={currentUserName || "User"}>
+                  {currentUserName?.charAt(0).toUpperCase() || "U"}
+                </Avatar>
               </IconButton>
             </Tooltip>
             <Menu

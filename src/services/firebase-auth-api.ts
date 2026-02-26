@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, Auth, signInWithEmailAndPassword, AuthError } from "firebase/auth";
+import { getAuth, Auth, signInWithEmailAndPassword, AuthError, updatePassword } from "firebase/auth";
 
 import Result from "../utils/result";
 import type { ErrorResponse } from "../types/error-response";
@@ -46,6 +46,37 @@ export default class FirebaseAuthApi {
       return Result.err({
         message: "Unknown error occurred",
         status: 500,
+      });
+    }
+  }
+
+  public async updatePassword(newPassword: string): Promise<Result<string, ErrorResponse>> {
+    try {
+      const user = this.client.currentUser;
+
+      if (!user) {
+        return Result.err({
+          message: "User is not authenticated",
+          status: 401,
+        });
+      }
+
+      await updatePassword(user, newPassword);
+
+      return Result.ok("success");
+    } catch (err) {
+      const authError = err as AuthError;
+      // Check if re-authentication is required
+      if (authError?.code === "auth/requires-recent-login") {
+        return Result.err({
+          message: "CREDENTIAL_TOO_OLD_LOGIN_AGAIN",
+          status: 400,
+        });
+      }
+
+      return Result.err({
+        message: authError?.message || "Unknown error occurred",
+        status: 400,
       });
     }
   }
