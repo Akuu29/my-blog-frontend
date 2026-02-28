@@ -69,6 +69,8 @@ function Header() {
       });
 
       updateIsLoggedIn(false);
+
+      navigate("/");
     } else if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
     }

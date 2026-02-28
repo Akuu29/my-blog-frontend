@@ -10,7 +10,7 @@ function Footer() {
         <Typography variant="body2" color="text.secondary" align="center">
           {'Copyright © '}
           <Link color="inherit" href="/">
-            Your Website
+            SpaceShelf
           </Link>{' '}
           {'2024.'}
         </Typography>
