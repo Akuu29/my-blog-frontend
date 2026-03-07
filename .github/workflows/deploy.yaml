@@ -7,7 +7,11 @@ on:
       - prd
     paths:
       - "src/**"
+      - "public/**"
       - "package.json"
+      - "package-lock.json"
+      - "vite.config.ts"
+      - "wrangler.jsonc"
 
 jobs:
   deploy:
