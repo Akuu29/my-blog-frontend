@@ -19,7 +19,7 @@
             "name": "my-blog-frontend-worker-prd",
             "routes": [
                 {
-                    "pattern": "www.urspaceshelf.com",
+                    "pattern": "urspaceshelf.com",
                     "custom_domain": true
                 }
             ]
