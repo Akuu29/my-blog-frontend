@@ -12,6 +12,7 @@ import TagWidget from "../../../components/layout/side-bar-widget/TagWidget/TagW
 import ArticleList from "../components/ArticleList";
 
 import ArticleApi from "../../../services/article-api";
+import UserApi from "../../../services/user-api";
 import handleError from "../../../utils/handle-error";
 import { useEffect as useEffectReact } from "react";
 import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
@@ -40,7 +41,15 @@ function ArticlesByUser(props?: ArticlesByUserProps) {
   const userNameFromState = (location.state as { userName?: string } | null)?.userName;
 
   const userId = props?.userId ?? userIdFromParams;
-  const userName = props?.userName ?? userNameFromState;
+  const [userName, setUserName] = useState<string | undefined>(props?.userName ?? userNameFromState);
+
+  useEffect(() => {
+    if (!userName && userId) {
+      UserApi.find(userId).then(result => {
+        if (result.isOk()) setUserName(result.unwrap().name);
+      });
+    }
+  }, [userId, userName]);
 
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const openSnackbarRef = useRef(openSnackbar);
