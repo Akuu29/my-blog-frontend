@@ -5,10 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:stg1": "tsc && vite build --mode stg",
-    "build:prd2": "tsc && vite build --mode prd",
     "build:stg": "tsc && CLOUDFLARE_ENV=stg vite build --mode stg",
-    "build:prd": "tsc && CLOUDFLARE_ENV=prd vite build",
+    "build:prd": "tsc && CLOUDFLARE_ENV=prd vite build --mode prd",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview:stg": "npm run build:stg && wrangler dev",
     "preview:prd": "npm run build:prd && wrangler dev",
