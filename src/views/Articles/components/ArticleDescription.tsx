@@ -85,6 +85,7 @@ function ArticleDescription({ leftSideBar, rightSideBar }: ArticleProps) {
                   color: "inherit",
                   fontFamily: "string",
                 }}
+                wrapperElement={{ "data-color-mode": "light" }}
                 skipHtml={true}
                 rehypePlugins={[rehypeSanitize]}
               />
