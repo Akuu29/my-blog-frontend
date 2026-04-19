@@ -25,7 +25,7 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
 import FirebaseAuthApi from "../services/firebase-auth-api";
-import UserApi from "../services/user-api";
+import { userApi } from "../services/user-api";
 import handleError from "../utils/handle-error";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import { UserStatusContext } from "../contexts/UserStatusContext";
@@ -88,7 +88,7 @@ function Settings() {
     setIsLoading(true);
 
     try {
-      const result = await UserApi.update(userStatus.currentUserId, { name: userName.trim() });
+      const result = await userApi.update(userStatus.currentUserId, { name: userName.trim() });
 
       if (result.isOk()) {
         const updatedUser = result.unwrap();

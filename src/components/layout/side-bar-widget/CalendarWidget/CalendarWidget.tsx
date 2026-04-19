@@ -7,7 +7,7 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Link from "@mui/material/Link";
 
-import ArticleApi from "../../../../services/article-api";
+import { articleApi } from "../../../../services/article-api";
 import { Article } from "../../../../types/article";
 import handleError from "../../../../utils/handle-error";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +38,7 @@ function CalendarWidget({ userId }: CalendarWidgetProps) {
   const [articles, setArticles] = useState<Array<Article>>([]);
   useEffect(() => {
     (async () => {
-      const result = await ArticleApi.all({ status: "published", userId });
+      const result = await articleApi.all({ status: "published", userId });
 
       if (result.isOk()) {
         const body = result.unwrap();

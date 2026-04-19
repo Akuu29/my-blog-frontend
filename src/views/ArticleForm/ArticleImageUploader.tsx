@@ -13,7 +13,7 @@ import IconButton from "@mui/material/IconButton";
 
 import handleError from "../../utils/handle-error";
 import { ErrorSnackbarContext } from "../../contexts/ErrorSnackbarContext";
-import ImageApi from "../../services/image-api";
+import { imageApi } from "../../services/image-api";
 import type { ErrorSnackbarContextProps } from "../../types/error-snackbar-context";
 import type { Image } from "../../types/image";
 
@@ -35,7 +35,7 @@ function ArticleImageUploader({ articleId, uploadedImages, setUploadedImages, on
     formData.append("filename", file.name);
     formData.append("articleId", articleId);
 
-    const result = await ImageApi.upload(formData);
+    const result = await imageApi.upload(formData);
     if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
       return null;
@@ -71,7 +71,7 @@ function ArticleImageUploader({ articleId, uploadedImages, setUploadedImages, on
       return;
     }
 
-    const result = await ImageApi.delete(imageId);
+    const result = await imageApi.delete(imageId);
     if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
       return;
