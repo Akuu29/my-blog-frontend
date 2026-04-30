@@ -93,7 +93,7 @@ function TagWidget({ setSelectedTags, userId, showAdminMenu }: TagWidgetProps) {
     const result = await tagApi.delete(tag.id);
 
     if (result.isOk()) {
-      setTags(tags.filter((t) => t.id !== tag.id));
+      setTags((prev) => prev.filter((t) => t.id !== tag.id));
     } else if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
     }
