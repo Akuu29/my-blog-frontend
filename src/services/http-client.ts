@@ -10,6 +10,7 @@ type RequestOptions = {
   params?: Record<string, unknown>;
   headers?: Record<string, string>;
   credentials?: RequestCredentials;
+  timeoutMs?: number;
 };
 
 export interface IHttpClient {
@@ -26,7 +27,7 @@ async function request<T>(
   body?: unknown,
   options: RequestOptions = {}
 ): Promise<Result<T, ErrorResponse>> {
-  const { params, headers = {}, credentials = "include" } = options;
+  const { params, headers = {}, credentials = "include", timeoutMs = TIMEOUT_MS } = options;
 
   let url = `${BASE_URL}${path}`;
   if (params) {
@@ -60,7 +61,7 @@ async function request<T>(
   // controller.signal is passed to fetch() and remains active until clearTimeout fires
   // or timeout elapses — covering both header receipt and body consumption (res.json/res.text).
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(url, { ...fetchOptions, signal: controller.signal });
