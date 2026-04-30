@@ -1,22 +1,24 @@
-import { httpClient } from "./http-client";
+import { httpClient, type IHttpClient } from "./http-client";
 import Result from "../utils/result";
-import { requestSafely } from "../utils/request-safely";
 import type { ErrorResponse } from "../types/error-response";
 import type { Image } from "../types/image";
 
-export default class ImageApi {
-  static async upload(file: FormData): Promise<Result<Image, ErrorResponse>> {
-    return requestSafely<Image>(httpClient.post("/images", file));
+const IMAGE_UPLOAD_TIMEOUT_MS = 60_000;
+
+export class ImageApi {
+  constructor(private http: IHttpClient) { }
+
+  async upload(file: FormData): Promise<Result<Image, ErrorResponse>> {
+    return this.http.post("/images", file, { timeoutMs: IMAGE_UPLOAD_TIMEOUT_MS });
   }
 
-  static async all(articleId: string): Promise<Result<Array<Image>, ErrorResponse>> {
-    const filter = {
-      articleId: articleId
-    };
-    return requestSafely<Array<Image>>(httpClient.get("/images", { params: filter }));
+  async all(articleId: string): Promise<Result<Array<Image>, ErrorResponse>> {
+    return this.http.get("/images", { params: { articleId } });
   }
 
-  static async delete(imageId: string): Promise<Result<null, ErrorResponse>> {
-    return requestSafely<null>(httpClient.delete(`/images/${imageId}`));
+  async delete(imageId: string): Promise<Result<null, ErrorResponse>> {
+    return this.http.delete(`/images/${imageId}`);
   }
 }
+
+export const imageApi = new ImageApi(httpClient);

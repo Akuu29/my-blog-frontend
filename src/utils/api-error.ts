@@ -1,20 +1,18 @@
-import axios from "axios";
-
 import type { ErrorResponse } from "../types/error-response";
 
-export function toErrorResponse(err: unknown): ErrorResponse {
-  if (axios.isAxiosError(err)) {
-    const status = (err.response?.status as number) ?? 0;
-    const message = err.response?.data?.message ?? err.message;
-
-    return {
-      status,
-      message
-    };
+export class HttpError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+    this.name = "HttpError";
   }
+}
 
-  return {
-    message: "Unknown error occurred",
-    status: 500
-  };
+export function toErrorResponse(err: unknown): ErrorResponse {
+  if (err instanceof HttpError) {
+    return { status: err.status, message: err.message };
+  }
+  if (err instanceof DOMException && err.name === "AbortError") {
+    return { status: 408, message: "Request timed out" };
+  }
+  return { status: 500, message: "Unknown error occurred" };
 }

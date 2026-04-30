@@ -1,28 +1,31 @@
-import { httpClient } from "./http-client";
+import { httpClient, type IHttpClient } from "./http-client";
 import Result from "../utils/result";
-import { requestSafely } from "../utils/request-safely";
 import type { ErrorResponse } from "../types/error-response";
 import type { Tag, NewTag, TagFilter } from "../types/tag";
 import type { PagedBody } from "../types/paged-body";
 import type { Pagination } from "../types/pagination";
 
-export default class TagApi {
-  static async create(new_tag: NewTag): Promise<Result<Tag, ErrorResponse>> {
-    return requestSafely<Tag>(httpClient.post("/tags", new_tag));
+export class TagApi {
+  constructor(private http: IHttpClient) { }
+
+  async create(new_tag: NewTag): Promise<Result<Tag, ErrorResponse>> {
+    return this.http.post("/tags", new_tag);
   }
 
-  static async all(filter?: TagFilter, pagination?: Pagination): Promise<Result<PagedBody<Tag>, ErrorResponse>> {
-    return requestSafely<PagedBody<Tag>>(httpClient.get(
+  async all(filter?: TagFilter, pagination?: Pagination): Promise<Result<PagedBody<Tag>, ErrorResponse>> {
+    return this.http.get(
       "/tags",
       { params: { ...(pagination ?? {}), ...(filter ?? {}) } }
-    ));
+    );
   }
 
-  static async delete(tag_id: string): Promise<Result<null, ErrorResponse>> {
-    return requestSafely<null>(httpClient.delete(`/tags/${tag_id}`));
+  async delete(tag_id: string): Promise<Result<null, ErrorResponse>> {
+    return this.http.delete(`/tags/${tag_id}`);
   }
 
-  static async findTagsByArticleId(articleId: string): Promise<Result<Array<Tag>, ErrorResponse>> {
-    return requestSafely<Array<Tag>>(httpClient.get(`/tags/article/${articleId}`));
+  async findTagsByArticleId(articleId: string): Promise<Result<Array<Tag>, ErrorResponse>> {
+    return this.http.get(`/tags/article/${articleId}`);
   }
 }
+
+export const tagApi = new TagApi(httpClient);

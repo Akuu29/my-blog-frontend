@@ -6,7 +6,7 @@ import Box from "@mui/material/Box";
 import PageLayout from "../../../components/layout/PageLayout";
 import ArticleList from "../components/ArticleList";
 
-import ArticleApi from "../../../services/article-api";
+import { articleApi } from "../../../services/article-api";
 import { useNavigate } from "react-router-dom";
 import handleError from "../../../utils/handle-error";
 import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
@@ -40,7 +40,7 @@ function Articles() {
     loadingRef.current = true;
 
     try {
-      const result = await ArticleApi.all(
+      const result = await articleApi.all(
         { status: "published" },
         { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }
       );

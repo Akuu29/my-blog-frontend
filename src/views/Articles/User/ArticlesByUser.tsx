@@ -11,8 +11,8 @@ import CategoryWidget from "../../../components/layout/side-bar-widget/CategoryW
 import TagWidget from "../../../components/layout/side-bar-widget/TagWidget/TagWidget";
 import ArticleList from "../components/ArticleList";
 
-import ArticleApi from "../../../services/article-api";
-import UserApi from "../../../services/user-api";
+import { articleApi } from "../../../services/article-api";
+import { userApi } from "../../../services/user-api";
 import handleError from "../../../utils/handle-error";
 import { useEffect as useEffectReact } from "react";
 import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
@@ -45,7 +45,7 @@ function ArticlesByUser(props?: ArticlesByUserProps) {
 
   useEffect(() => {
     if (!userName && userId) {
-      UserApi.find(userId).then(result => {
+      userApi.find(userId).then(result => {
         if (result.isOk()) setUserName(result.unwrap().name);
       });
     }
@@ -70,8 +70,8 @@ function ArticlesByUser(props?: ArticlesByUserProps) {
 
     try {
       const result = selectedTags.length > 0
-        ? await ArticleApi.findByTag({ tagIds: selectedTags.map(t => t.id), userId: userId as string }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE })
-        : await ArticleApi.all(
+        ? await articleApi.findByTag({ tagIds: selectedTags.map(t => t.id), userId: userId as string }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE })
+        : await articleApi.all(
           { status: "published", userId: userId },
           { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }
         );

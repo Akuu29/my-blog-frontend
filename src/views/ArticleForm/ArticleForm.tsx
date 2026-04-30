@@ -10,10 +10,10 @@ import SaveIcon from "@mui/icons-material/Save";
 
 import handleError from "../../utils/handle-error";
 import Result from "../../utils/result";
-import ArticleApi from "../../services/article-api";
-import CategoryApi from "../../services/category-api";
-import TagApi from "../../services/tag-api";
-import ImageApi from "../../services/image-api";
+import { articleApi } from "../../services/article-api";
+import { categoryApi } from "../../services/category-api";
+import { tagApi } from "../../services/tag-api";
+import { imageApi } from "../../services/image-api";
 import { ErrorSnackbarContext } from "../../contexts/ErrorSnackbarContext";
 import { UserStatusContext } from "../../contexts/UserStatusContext";
 import ArticleField from "./ArticleField";
@@ -49,7 +49,7 @@ function ArticleForm() {
   const articleCreatedRef = useRef<boolean>(false);
   useEffect(() => {
     (async () => {
-      const result = await CategoryApi.all({ userId: userStatus.currentUserId! });
+      const result = await categoryApi.all({ userId: userStatus.currentUserId! });
 
       if (result.isOk()) {
         const body = result.unwrap();
@@ -63,7 +63,7 @@ function ArticleForm() {
   const [existingTags, setExistingTags] = useState<Array<Tag>>([]);
   useEffect(() => {
     (async () => {
-      const result = await TagApi.all({ userId: userStatus.currentUserId! });
+      const result = await tagApi.all({ userId: userStatus.currentUserId! });
 
       if (result.isOk()) {
         const body = result.unwrap();
@@ -87,7 +87,7 @@ function ArticleForm() {
         const newArticle: NewArticle = {
           status: "draft",
         };
-        const result = await ArticleApi.create(newArticle);
+        const result = await articleApi.create(newArticle);
         if (result.isErr()) {
           handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
           return;
@@ -98,7 +98,7 @@ function ArticleForm() {
       })();
     } else if (articleId) {
       const getCategoryName = async (categoryId: string): Promise<Result<string, null>> => {
-        const result = await CategoryApi.all({ id: categoryId });
+        const result = await categoryApi.all({ id: categoryId });
 
         if (result.isErr()) {
           handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
@@ -115,7 +115,7 @@ function ArticleForm() {
       };
 
       const getTags = async (articleId: string): Promise<Result<Array<Tag>, null>> => {
-        const result = await TagApi.findTagsByArticleId(articleId);
+        const result = await tagApi.findTagsByArticleId(articleId);
 
         if (result.isErr()) {
           handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
@@ -127,7 +127,7 @@ function ArticleForm() {
       };
 
       const getImages = async (articleId: string): Promise<Result<Array<Image>, null>> => {
-        const result = await ImageApi.all(articleId);
+        const result = await imageApi.all(articleId);
 
         if (result.isErr()) {
           handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
@@ -138,7 +138,7 @@ function ArticleForm() {
       };
 
       (async () => {
-        const findArticleResult = await ArticleApi.find(articleId);
+        const findArticleResult = await articleApi.find(articleId);
 
         if (findArticleResult.isErr()) {
           handleError(findArticleResult.unwrap(), navigate, openSnackbarRef.current, "top", "center");
@@ -183,7 +183,7 @@ function ArticleForm() {
       return Result.ok(null);
     }
 
-    const result = await CategoryApi.all({ name: categoryName });
+    const result = await categoryApi.all({ name: categoryName });
 
     if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
@@ -194,7 +194,7 @@ function ArticleForm() {
 
     if (categories.length === 0) {
       // If the category does not exist, create a new category and return the id of the new category.
-      const result = await CategoryApi.create({ name: categoryName });
+      const result = await categoryApi.create({ name: categoryName });
 
       if (result.isErr()) {
         handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
@@ -216,7 +216,7 @@ function ArticleForm() {
       categoryId: categoryId,
     };
 
-    const result = await ArticleApi.update(articleId, updatedArticle);
+    const result = await articleApi.update(articleId, updatedArticle);
 
     if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");
@@ -228,7 +228,7 @@ function ArticleForm() {
   };
 
   const attachTags = async (articleId: string, selectedTags: Array<Tag>): Promise<Result<null, null>> => {
-    const result = await ArticleApi.attachTags(articleId, selectedTags.map((tag) => tag.id));
+    const result = await articleApi.attachTags(articleId, selectedTags.map((tag) => tag.id));
 
     if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbar, "top", "center");

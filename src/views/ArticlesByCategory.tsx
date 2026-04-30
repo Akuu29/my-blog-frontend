@@ -8,7 +8,7 @@ import Stack from "@mui/material/Stack";
 
 import PageLayout from "../components/layout/PageLayout";
 
-import ArticleApi from "../services/article-api";
+import { articleApi } from "../services/article-api";
 import handleError from "../utils/handle-error";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
@@ -36,7 +36,7 @@ function ArticlesByCategory() {
 
   useEffect(() => {
     (async () => {
-      const result = await ArticleApi.all(
+      const result = await articleApi.all(
         { status: "published", categoryId: categoryId, },
         { perPage: 20, }
       );

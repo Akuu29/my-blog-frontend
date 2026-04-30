@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 
 import PageLayout from "../../../components/layout/PageLayout";
-import ArticleApi from "../../../services/article-api";
+import { articleApi } from "../../../services/article-api";
 import handleError from "../../../utils/handle-error";
 import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
 import type { Article } from "../../../types/article";
@@ -40,7 +40,7 @@ function ArticleDescription({ leftSideBar, rightSideBar }: ArticleProps) {
         return;
       }
 
-      const result = await ArticleApi.find(articleId);
+      const result = await articleApi.find(articleId);
 
       if (result.isOk()) {
         setArticle(result.unwrap());

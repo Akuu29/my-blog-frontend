@@ -12,8 +12,8 @@ import PageLayout from "../components/layout/PageLayout";
 import ArticleList from "./Articles/components/ArticleList";
 import UserList from "./UserList";
 
-import ArticleApi from "../services/article-api";
-import UserApi from "../services/user-api";
+import { articleApi } from "../services/article-api";
+import { userApi } from "../services/user-api";
 import handleError from "../utils/handle-error";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import type { Article } from "../types/article";
@@ -58,11 +58,11 @@ function SearchResults() {
       setHasSearched(true);
 
       const [articlesResult, usersResult] = await Promise.all([
-        ArticleApi.all(
+        articleApi.all(
           { status: "published", titleContains: trimmedSearchQuery },
           { cursor: null, perPage: 50 }
         ),
-        UserApi.all(
+        userApi.all(
           { nameContains: trimmedSearchQuery },
           { cursor: null, perPage: 50 }
         )
