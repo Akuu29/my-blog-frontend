@@ -79,7 +79,7 @@ async function request<T>(
 
     const contentType = res.headers.get("Content-Type") ?? "";
     if (res.status === 204 || !contentType) {
-      return Result.ok(undefined as T);
+      return Result.ok(null as T);
     }
 
     const mimeType = contentType.split(";")[0].trim();
