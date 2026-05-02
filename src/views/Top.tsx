@@ -14,7 +14,7 @@ import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 
 import PageLayout from "../components/layout/PageLayout";
-import ArticleApi from "../services/article-api";
+import { articleApi } from "../services/article-api";
 import handleError from "../utils/handle-error";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import type { Article } from "../types/article";
@@ -40,7 +40,7 @@ function Top() {
     const fetchRecentArticles = async () => {
       setLoading(true);
 
-      const result = await ArticleApi.all(
+      const result = await articleApi.all(
         { status: "published" },
         { cursor: null, perPage: RECENT_ARTICLES_COUNT }
       );

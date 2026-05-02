@@ -11,7 +11,8 @@ import CategoryWidget from "../../../components/layout/side-bar-widget/CategoryW
 import TagWidget from "../../../components/layout/side-bar-widget/TagWidget/TagWidget";
 import ArticleList from "../components/ArticleList";
 
-import ArticleApi from "../../../services/article-api";
+import { articleApi } from "../../../services/article-api";
+import { userApi } from "../../../services/user-api";
 import handleError from "../../../utils/handle-error";
 import { useEffect as useEffectReact } from "react";
 import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
@@ -40,7 +41,15 @@ function ArticlesByUser(props?: ArticlesByUserProps) {
   const userNameFromState = (location.state as { userName?: string } | null)?.userName;
 
   const userId = props?.userId ?? userIdFromParams;
-  const userName = props?.userName ?? userNameFromState;
+  const [userName, setUserName] = useState<string | undefined>(props?.userName ?? userNameFromState);
+
+  useEffect(() => {
+    if (!userName && userId) {
+      userApi.find(userId).then(result => {
+        if (result.isOk()) setUserName(result.unwrap().name);
+      });
+    }
+  }, [userId, userName]);
 
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const openSnackbarRef = useRef(openSnackbar);
@@ -61,8 +70,8 @@ function ArticlesByUser(props?: ArticlesByUserProps) {
 
     try {
       const result = selectedTags.length > 0
-        ? await ArticleApi.findByTag({ tagIds: selectedTags.map(t => t.id), userId: userId as string }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE })
-        : await ArticleApi.all(
+        ? await articleApi.findByTag({ tagIds: selectedTags.map(t => t.id), userId: userId as string }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE })
+        : await articleApi.all(
           { status: "published", userId: userId },
           { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }
         );

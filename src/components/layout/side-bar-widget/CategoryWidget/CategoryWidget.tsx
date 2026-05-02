@@ -9,7 +9,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Pagination from "@mui/material/Pagination";
 
-import CategoryApi from "../../../../services/category-api";
+import { categoryApi } from "../../../../services/category-api";
 import CategoryRow from "./CategoryRow";
 import { ErrorSnackbarContext } from "../../../../contexts/ErrorSnackbarContext";
 import handleError from "../../../../utils/handle-error";
@@ -36,7 +36,7 @@ function CategoryWidget({ userId, showAdminMenu }: CategoryWidgetProps) {
   const pageCount = Math.max(1, Math.ceil(total / CATEGORY_PER_PAGE));
   const loadPage = useCallback(async (targetPage: number) => {
     const offset = (targetPage - 1) * CATEGORY_PER_PAGE;
-    const result = await CategoryApi.all(
+    const result = await categoryApi.all(
       { userId } as CategoryFilter,
       { offset, perPage: CATEGORY_PER_PAGE }
     );
@@ -59,7 +59,7 @@ function CategoryWidget({ userId, showAdminMenu }: CategoryWidgetProps) {
   }, [navigate, userId, loadPage]);
 
   const deleteCategory = async (category: Category) => {
-    const result = await CategoryApi.delete(category.id);
+    const result = await categoryApi.delete(category.id);
 
     if (result.isOk()) {
       const willBeLength = Math.max(0, categories.length - 1);
@@ -74,7 +74,7 @@ function CategoryWidget({ userId, showAdminMenu }: CategoryWidgetProps) {
   };
 
   const updateCategory = async (category: Category, editCategoryName: string): Promise<Result<null, null>> => {
-    const result = await CategoryApi.update(category.id, { name: editCategoryName });
+    const result = await categoryApi.update(category.id, { name: editCategoryName });
 
     if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
@@ -118,7 +118,7 @@ function CategoryWidget({ userId, showAdminMenu }: CategoryWidgetProps) {
       return;
     }
 
-    const result = await CategoryApi.create({ name: categoryName });
+    const result = await categoryApi.create({ name: categoryName });
 
     if (result.isOk()) {
       setCategories((prev) => [...prev, result.unwrap()]);

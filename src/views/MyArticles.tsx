@@ -14,7 +14,7 @@ import CalendarWidget from "../components/layout/side-bar-widget/CalendarWidget/
 import CategoryWidget from "../components/layout/side-bar-widget/CategoryWidget/CategoryWidget";
 import TagWidget from "../components/layout/side-bar-widget/TagWidget/TagWidget";
 import ArticleListWithStatus from "./Articles/components/ArticleListWithStatus";
-import ArticleApi from "../services/article-api";
+import { articleApi } from "../services/article-api";
 import handleError from "../utils/handle-error";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
 import { UserStatusContext } from "../contexts/UserStatusContext";
@@ -78,11 +78,11 @@ function MyArticles() {
       };
 
       const result = selectedTags.length > 0
-        ? await ArticleApi.findByTag(
+        ? await articleApi.findByTag(
           { tagIds: selectedTags.map(t => t.id), userId: userStatus.currentUserId, articleStatus: targetStatus },
           { cursor: cursorMap[targetStatus].current, perPage: ARTICLES_PER_PAGE }
         )
-        : await ArticleApi.all(
+        : await articleApi.all(
           { status: targetStatus, userId: userStatus.currentUserId },
           { cursor: cursorMap[targetStatus].current, perPage: ARTICLES_PER_PAGE }
         );
