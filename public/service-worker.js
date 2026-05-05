@@ -4,7 +4,7 @@ const EXCLUDED_ENDPOINTS = [
   "/users/signup",
 ];
 
-let apiBaseUrl = "";
+const apiBaseUrl = new URL(self.location.href).searchParams.get("apiBaseUrl") || "";
 let accessToken = null;
 let refreshTokenPromise = null;
 
@@ -13,12 +13,9 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
-  const { type, message } = event.data;
+  const { type } = event.data;
 
   switch (type) {
-    case "SET_API_BASE_URL":
-      apiBaseUrl = message;
-      break;
     case "RESET_ACCESS_TOKEN":
       accessToken = null;
       refreshTokenPromise = null;
