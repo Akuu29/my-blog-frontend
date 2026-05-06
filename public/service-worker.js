@@ -13,6 +13,7 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
+  if (!event.data) return;
   const { type } = event.data;
 
   switch (type) {
