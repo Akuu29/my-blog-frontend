@@ -6,25 +6,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js")
+    const swUrl = `/service-worker.js?apiBaseUrl=${encodeURIComponent(API_BASE_URL)}`;
+    navigator.serviceWorker.register(swUrl)
       .then((registration) => {
         console.log("ServiceWorker registration successful with scope: ", registration.scope);
-
-        if (registration.active) {
-          registration.active.postMessage({
-            type: "SET_API_BASE_URL",
-            message: API_BASE_URL
-          });
-        } else {
-          navigator.serviceWorker.addEventListener("controllerchange", () => {
-            if (navigator.serviceWorker.controller) {
-              navigator.serviceWorker.controller.postMessage({
-                type: "SET_API_BASE_URL",
-                message: API_BASE_URL
-              });
-            }
-          });
-        }
       })
       .catch((error) => {
         console.log("ServiceWorker registration failed: ", error);
