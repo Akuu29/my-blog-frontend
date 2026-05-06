@@ -20,7 +20,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import FirebaseAuthApi from '../services/firebase-auth-api';
-import UserApi from '../services/user-api';
+import { userApi } from '../services/user-api';
 import { UserStatusContext } from '../contexts/UserStatusContext';
 import handleError from "../utils/handle-error";
 import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
@@ -48,7 +48,7 @@ function SignIn() {
       );
 
       if (result.isOk()) {
-        const verifyResult = await UserApi.signIn(result.value);
+        const verifyResult = await userApi.signIn(result.value);
 
         if (verifyResult.isOk()) {
           const { user } = verifyResult.unwrap();

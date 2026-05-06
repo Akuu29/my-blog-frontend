@@ -1,19 +1,18 @@
-import { httpClient } from "./http-client";
+import { httpClient, type IHttpClient } from "./http-client";
 import Result from "../utils/result";
-import { requestSafely } from "../utils/request-safely";
 import type { ApiCredentials } from "../types/token";
 import type { ErrorResponse } from "../types/error-response";
 
-export default class TokenApi {
-  static async refreshToken(): Promise<Result<ApiCredentials, ErrorResponse>> {
-    return requestSafely<ApiCredentials>(httpClient.get(`/token/refresh`, {
-      withCredentials: true,
-    }));
+export class TokenApi {
+  constructor(private http: IHttpClient) { }
+
+  async refreshToken(): Promise<Result<ApiCredentials, ErrorResponse>> {
+    return this.http.get(`/token/refresh`);
   }
 
-  static async resetRefreshToken(): Promise<Result<null, ErrorResponse>> {
-    return requestSafely<null>(httpClient.get(`/token/reset`, {
-      withCredentials: true,
-    }));
+  async resetRefreshToken(): Promise<Result<null, ErrorResponse>> {
+    return this.http.get(`/token/reset`);
   }
 }
+
+export const tokenApi = new TokenApi(httpClient);

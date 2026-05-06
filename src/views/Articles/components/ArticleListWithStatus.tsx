@@ -11,7 +11,7 @@ import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
 
 import ArticleAdminMenu from "./ArticleAdminMenu";
-import ArticleApi from "../../../services/article-api";
+import { articleApi } from "../../../services/article-api";
 import handleError from "../../../utils/handle-error";
 import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
 import type { Article, ArticleStatus } from "../../../types/article";
@@ -40,7 +40,7 @@ function ArticleListWithStatus({ articles, userId }: ArticleListWithStatusProps)
   };
 
   const deleteArticle = async (articleId: string) => {
-    const result = await ArticleApi.delete(articleId);
+    const result = await articleApi.delete(articleId);
 
     if (result.isOk()) {
       window.location.reload();

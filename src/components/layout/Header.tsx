@@ -16,7 +16,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import Container from '@mui/material/Container';
 import { match } from 'ts-pattern';
 
-import TokenApi from '../../services/token-api';
+import { tokenApi } from '../../services/token-api';
 import handleError from '../../utils/handle-error';
 import { UserStatusContext } from '../../contexts/UserStatusContext';
 import { ErrorSnackbarContext } from '../../contexts/ErrorSnackbarContext';
@@ -62,7 +62,7 @@ function Header() {
   };
 
   const logout = async () => {
-    const result = await TokenApi.resetRefreshToken();
+    const result = await tokenApi.resetRefreshToken();
     if (result.isOk()) {
       navigator.serviceWorker.controller?.postMessage({
         type: "RESET_ACCESS_TOKEN",

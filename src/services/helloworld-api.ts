@@ -1,10 +1,13 @@
-import { httpClient } from "./http-client";
+import { httpClient, type IHttpClient } from "./http-client";
 import Result from "../utils/result";
-import { requestSafely } from "../utils/request-safely";
 import type { ErrorResponse } from "../types/error-response";
 
 export class HelloWorldApi {
-  static async getHelloWorld(): Promise<Result<string, ErrorResponse>> {
-    return requestSafely<string>(httpClient.get("/"));
+  constructor(private http: IHttpClient) { }
+
+  async getHelloWorld(): Promise<Result<string, ErrorResponse>> {
+    return this.http.get("/hello-world");
   }
 }
+
+export const helloWorldApi = new HelloWorldApi(httpClient);

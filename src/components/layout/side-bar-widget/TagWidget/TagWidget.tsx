@@ -13,7 +13,7 @@ import Button from "@mui/material/Button";
 import TagCheckBox from "./TagCheckBox";
 import TagList from "./TagList";
 import TagAdminMenu from "./TagAdminMenu";
-import TagApi from "../../../../services/tag-api";
+import { tagApi } from "../../../../services/tag-api";
 import { UserStatusContext } from "../../../../contexts/UserStatusContext";
 import { ErrorSnackbarContext } from "../../../../contexts/ErrorSnackbarContext";
 import handleError from "../../../../utils/handle-error";
@@ -43,7 +43,7 @@ function TagWidget({ setSelectedTags, userId, showAdminMenu }: TagWidgetProps) {
   const [tags, setTags] = useState<Array<Tag>>([]);
   useEffect(() => {
     (async () => {
-      const result = await TagApi.all({ userId });
+      const result = await tagApi.all({ userId });
 
       if (result.isOk()) {
         const body = result.unwrap();
@@ -79,7 +79,7 @@ function TagWidget({ setSelectedTags, userId, showAdminMenu }: TagWidgetProps) {
       return;
     }
 
-    const result = await TagApi.create({ name: tagName });
+    const result = await tagApi.create({ name: tagName });
 
     if (result.isOk()) {
       setTags((prev) => [...prev, result.unwrap()]);
@@ -90,10 +90,10 @@ function TagWidget({ setSelectedTags, userId, showAdminMenu }: TagWidgetProps) {
   };
 
   const handleDeleteTag = async (tag: Tag) => {
-    const result = await TagApi.delete(tag.id);
+    const result = await tagApi.delete(tag.id);
 
     if (result.isOk()) {
-      setTags(tags.filter((t) => t.id !== tag.id));
+      setTags((prev) => prev.filter((t) => t.id !== tag.id));
     } else if (result.isErr()) {
       handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
     }

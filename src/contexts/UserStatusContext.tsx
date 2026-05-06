@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useState, useEffect } from "react";
 
-import TokenApi from "../services/token-api";
+import { tokenApi } from "../services/token-api";
 import type { UserStatusContextProps } from "../types/user-status-context";
 
 export const UserStatusContext = createContext<UserStatusContextProps | null>(null);
@@ -26,7 +26,7 @@ export function UserStatusContextProvider({ children }: { children: ReactNode })
   useEffect(() => {
     const initializeIsLoggedIn = async () => {
       try {
-        const result = await TokenApi.refreshToken();
+        const result = await tokenApi.refreshToken();
 
         if (result.isOk()) {
           const credentials = result.unwrap();
