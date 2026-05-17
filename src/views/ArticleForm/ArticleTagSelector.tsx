@@ -54,8 +54,11 @@ function ArticleTagSelector({ existingTags, selectedTags, setSelectedTags }: Art
         open={Boolean(menuAnchorEl)}
         onClose={() => setMenuAnchorEl(null)}
       >
-        {unselectedTags.map((tag, index) => (
-          <MenuItem key={index} onClick={() => onClickTagItem(tag)}>
+        {unselectedTags.map((tag) => (
+          <MenuItem
+            key={tag.id}
+            onClick={() => onClickTagItem(tag)}
+          >
             {tag.name}
           </MenuItem>
         ))}
