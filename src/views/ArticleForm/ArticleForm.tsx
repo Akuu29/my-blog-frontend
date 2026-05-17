@@ -6,7 +6,7 @@ import MDEditor, { commands } from "@uiw/react-md-editor";
 import rehypeSanitize from "rehype-sanitize";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import SaveIcon from "@mui/icons-material/Save";
+import PublishIcon from "@mui/icons-material/Publish";
 
 import handleError from "../../utils/handle-error";
 import Result from "../../utils/result";
@@ -259,7 +259,7 @@ function ArticleForm() {
     return article;
   };
 
-  const handleSave = async () => {
+  const handlePublish = async () => {
     if (!articleId) {
       return;
     }
@@ -293,7 +293,8 @@ function ArticleForm() {
         sx={{
           padding: 2,
           justifyContent: "space-between",
-          alignItems: "flex-start"
+          alignItems: "flex-end",
+          gap: 2
         }}>
         <ArticleField>
           <ArticleTitleInput title={title} setTitle={setTitle} />
@@ -310,12 +311,12 @@ function ArticleForm() {
         <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
           <Button
             variant="outlined"
-            endIcon={<SaveIcon />}
+            endIcon={<PublishIcon />}
             sx={{
               fontFamily: "monospace",
             }}
-            onClick={handleSave}>
-            Save
+            onClick={handlePublish}>
+            Publish
           </Button>
         </Stack>
       </Stack>

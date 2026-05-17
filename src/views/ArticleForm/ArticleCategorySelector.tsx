@@ -46,7 +46,7 @@ function ArticleCategorySelector({ existingCategories, categoryName, setCategory
         }}
         InputProps={{
           endAdornment: (
-            <IconButton onClick={onClickDropIcon}>
+            <IconButton onClick={onClickDropIcon} sx={{ padding: '2px' }}>
               <ArrowDropDownIcon />
             </IconButton>
           ),
