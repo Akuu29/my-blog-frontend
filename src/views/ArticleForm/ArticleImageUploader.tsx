@@ -1,6 +1,6 @@
-import { useContext } from 'react';
+import { useState, useContext, MouseEvent } from 'react';
 import { useNavigate } from "react-router-dom";
-import Stack from "@mui/material/Stack";
+import Badge from "@mui/material/Badge";
 import Button from "@mui/material/Button";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -10,6 +10,9 @@ import ImageIcon from "@mui/icons-material/Image";
 import UploadIcon from "@mui/icons-material/Upload";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
+import Popover from "@mui/material/Popover";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
 
 import handleError from "../../utils/handle-error";
 import { ErrorSnackbarContext } from "../../contexts/ErrorSnackbarContext";
@@ -28,6 +31,7 @@ type ArticleImageUploaderProps = {
 function ArticleImageUploader({ articleId, uploadedImages, setUploadedImages, onImageUpload, onDeleteImage }: ArticleImageUploaderProps) {
   const navigate = useNavigate();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const uploadImage = async (file: File, articleId: string): Promise<Image | null> => {
     const formData = new FormData();
@@ -81,15 +85,19 @@ function ArticleImageUploader({ articleId, uploadedImages, setUploadedImages, on
     onDeleteImage(image.name, image.url);
   };
 
+  const handleOpenPopover = (event: MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
   return (
-    <Stack spacing={2}>
+    <Stack direction="row" alignItems="center" spacing={0.5}>
       <Button
         variant="outlined"
         component="label"
         startIcon={<UploadIcon />}
         sx={{ fontFamily: 'monospace' }}
       >
-        Upload Images
+        Upload Image
         <input
           type="file"
           hidden
@@ -98,32 +106,44 @@ function ArticleImageUploader({ articleId, uploadedImages, setUploadedImages, on
           onChange={handleFileSelect}
         />
       </Button>
-      {uploadedImages.length > 0 && (
-        <List dense>
-          {uploadedImages.map((image) => (
-            <ListItem
-              key={image.id}
-              secondaryAction={
-                <IconButton
-                  edge="end"
-                  aria-label="delete"
-                  onClick={() => handleDeleteImage(image.id)}
+      <Badge badgeContent={uploadedImages.length} color="primary">
+        <IconButton onClick={handleOpenPopover} sx={{ padding: '2px' }}>
+          <ImageIcon />
+        </IconButton>
+      </Badge>
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      >
+        <Box sx={{ p: 1, minWidth: 240 }}>
+          {uploadedImages.length === 0 ? (
+            <Box sx={{ px: 1, py: 0.5, fontFamily: 'monospace', fontSize: '0.8rem', color: 'text.secondary' }}>
+              No images uploaded
+            </Box>
+          ) : (
+            <List dense disablePadding>
+              {uploadedImages.map((image) => (
+                <ListItem
+                  key={image.id}
+                  secondaryAction={
+                    <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteImage(image.id)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  }
                 >
-                  <DeleteIcon />
-                </IconButton>
-              }
-            >
-              <ListItemIcon>
-                <ImageIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary={image.name}
-                sx={{ fontFamily: 'monospace' }}
-              />
-            </ListItem>
-          ))}
-        </List>
-      )}
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <ImageIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary={image.name} />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </Box>
+      </Popover>
     </Stack>
   );
 }
