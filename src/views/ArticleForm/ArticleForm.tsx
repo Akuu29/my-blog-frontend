@@ -94,7 +94,7 @@ function ArticleForm() {
         }
 
         const article = result.unwrap() as Article;
-        navigate(`/editor/${article.id}`);
+        navigate(`/editor/${article.id}`, { replace: true });
       })();
     } else if (articleId) {
       const getCategoryName = async (categoryId: string): Promise<Result<string, null>> => {
