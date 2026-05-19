@@ -31,9 +31,9 @@ function ArticleListWithStatus({ articles, userId }: ArticleListWithStatusProps)
   const getStatusBadge = (status: ArticleStatus) => {
     const config = {
       published: { label: "Published", color: "success" as const },
-      draft: { label: "Draft", color: "default" as const },
       private: { label: "Private", color: "warning" as const },
-      deleted: { label: "Deleted", color: "error" as const }
+      deleted: { label: "Deleted", color: "error" as const },
+      draft: { label: "Draft", color: "default" as const },
     };
     const { label, color } = config[status];
     return <Chip label={label} color={color} size="small" />;
