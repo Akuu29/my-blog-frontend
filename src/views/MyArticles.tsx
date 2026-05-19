@@ -26,8 +26,7 @@ import type { Cursor } from "../types/paged-body";
 
 const ARTICLES_PER_PAGE = 7;
 
-// Display article status (exclude "deleted")
-type MyArticlesTab = Exclude<ArticleStatus, "deleted">;
+type MyArticlesTab = "published" | "private";
 
 const theme = createTheme({
   typography: {
@@ -47,21 +46,18 @@ function MyArticles() {
 
   // Manage article status
   const [publishedArticles, setPublishedArticles] = useState<Article[]>([]);
-  const [draftArticles, setDraftArticles] = useState<Article[]>([]);
   const [privateArticles, setPrivateArticles] = useState<Article[]>([]);
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
 
   // Pagination
   const publishedCursorRef = useRef<Cursor | null>(null);
-  const draftCursorRef = useRef<Cursor | null>(null);
   const privateCursorRef = useRef<Cursor | null>(null);
   const loadingRef = useRef<boolean>(false);
   const loadingIndicatorRef = useRef<HTMLDivElement>(null);
   const hasMoreRef = useRef<{
     published: boolean;
-    draft: boolean;
     private: boolean;
-  }>({ published: true, draft: true, private: true });
+  }>({ published: true, private: true });
 
   // Call API
   const loadMoreArticles = useCallback(async (targetStatus: MyArticlesTab) => {
@@ -73,7 +69,6 @@ function MyArticles() {
     try {
       const cursorMap = {
         published: publishedCursorRef,
-        draft: draftCursorRef,
         private: privateCursorRef
       };
 
@@ -92,7 +87,6 @@ function MyArticles() {
 
         const setterMap = {
           published: setPublishedArticles,
-          draft: setDraftArticles,
           private: setPrivateArticles
         };
         setterMap[targetStatus]((prev) => [...prev, ...body.items]);
@@ -112,14 +106,12 @@ function MyArticles() {
 
   // Switching tabs
   const handleTabChange = (_event: React.SyntheticEvent, newValue: ArticleStatus) => {
-    // Exclude "deleted"
-    if (newValue === "deleted") return;
+    if (newValue !== "published" && newValue !== "private") return;
     setCurrentTab(newValue);
 
     // If the article in the new tab is not loaded, load it for the first time
     const articlesMap = {
       published: publishedArticles,
-      draft: draftArticles,
       private: privateArticles
     };
 
@@ -136,12 +128,10 @@ function MyArticles() {
   // Reset articles when selectedTags or currentTab changes
   useEffect(() => {
     setPublishedArticles([]);
-    setDraftArticles([]);
     setPrivateArticles([]);
     publishedCursorRef.current = null;
-    draftCursorRef.current = null;
     privateCursorRef.current = null;
-    hasMoreRef.current = { published: true, draft: true, private: true };
+    hasMoreRef.current = { published: true, private: true };
   }, [selectedTags, currentTab]);
 
   // Infinite scroll
@@ -175,7 +165,6 @@ function MyArticles() {
   const getCurrentArticles = () => {
     switch (currentTab) {
       case "published": return publishedArticles;
-      case "draft": return draftArticles;
       case "private": return privateArticles;
       default: return [];
     }
@@ -227,7 +216,6 @@ function MyArticles() {
               aria-label="article status tabs"
             >
               <Tab label="Published" value="published" />
-              <Tab label="Draft" value="draft" />
               <Tab label="Private" value="private" />
             </Tabs>
           </Box>
