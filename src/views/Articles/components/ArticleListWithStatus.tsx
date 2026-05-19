@@ -53,6 +53,21 @@ function ArticleListWithStatus({ articles, userId }: ArticleListWithStatusProps)
     navigate(`/editor/${articleId}`);
   };
 
+  const changeStatus = async (articleId: string, status: ArticleStatus) => {
+    const result = await articleApi.update(articleId, {
+      title: null,
+      body: null,
+      status,
+      categoryId: null,
+    });
+
+    if (result.isOk()) {
+      window.location.reload();
+    } else if (result.isErr()) {
+      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
+    }
+  };
+
   const onClickArticle = (article: Article) => {
     if (userId) {
       navigate(`/user/${userId}/article/${article.id}`);
@@ -94,8 +109,10 @@ function ArticleListWithStatus({ articles, userId }: ArticleListWithStatusProps)
                   {getStatusBadge(article.status)}
                   <div onClick={(e) => e.stopPropagation()}>
                     <ArticleAdminMenu
+                      articleStatus={article.status}
                       deleteArticle={() => deleteArticle(article.id)}
                       editArticle={() => editArticle(article.id)}
+                      changeStatus={(status) => changeStatus(article.id, status)}
                     />
                   </div>
                 </Box>
