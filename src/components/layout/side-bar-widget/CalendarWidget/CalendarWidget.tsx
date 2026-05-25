@@ -1,4 +1,6 @@
-import { useState, useEffect, useContext, useRef } from "react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import Accordion from "@mui/material/Accordion";
@@ -8,11 +10,11 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Link from "@mui/material/Link";
 
 import { articleApi } from "../../../../services/article-api";
-import { Article } from "../../../../types/article";
-import handleError from "../../../../utils/handle-error";
-import { useNavigate } from "react-router-dom";
-import { ErrorSnackbarContext } from "../../../../contexts/ErrorSnackbarContext";
-import { ErrorSnackbarContextProps } from "../../../../types/error-snackbar-context";
+import type { Article } from "../../../../types/article";
+import type { PagedBody } from "../../../../types/paged-body";
+
+const CALENDAR_STALE_TIME = 30 * 60 * 1000; // 30 min
+const CALENDAR_GC_TIME = 2 * 60 * 60 * 1000; // 2 hours
 
 const MONTH_LIST = [
   "January", "February", "March", "April", "May", "June",
@@ -31,74 +33,46 @@ type CalendarWidgetProps = {
 
 function CalendarWidget({ userId }: CalendarWidgetProps) {
   const navigate = useNavigate();
-  const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const openSnackbarRef = useRef(openSnackbar);
-  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
 
-  const [articles, setArticles] = useState<Array<Article>>([]);
-  useEffect(() => {
-    (async () => {
+  const { data } = useQuery({
+    queryKey: ["articles", "calendar", userId],
+    queryFn: async () => {
       const result = await articleApi.all({ status: "published", userId });
+      if (result.isErr()) throw result.unwrap();
+      return (result.unwrap() as PagedBody<Article>).items;
+    },
+    staleTime: CALENDAR_STALE_TIME,
+    gcTime: CALENDAR_GC_TIME,
+    enabled: !!userId,
+  });
 
-      if (result.isOk()) {
-        const body = result.unwrap();
-        setArticles(body.items);
-      } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "right");
-        return;
-      }
-    })();
-  }, [navigate, userId]);
-
-  const [articlesByDate, setArticlesByDate] = useState<{ [key: string]: { [key: string]: Article[] } }>({});
-
-  useEffect(() => {
-    const groupedArticles: { [key: string]: { [key: string]: Array<Article> } } = {};
-
-    articles.forEach(article => {
-      const createdDate = new Date(article.createdAt);
-      const year = createdDate.getFullYear().toString();
-      const month = (createdDate.getMonth() + 1).toString().padStart(2, '0');
-
-      if (!groupedArticles[year]) {
-        groupedArticles[year] = {};
-      }
-
-      if (!groupedArticles[year][month]) {
-        groupedArticles[year][month] = [];
-      }
-
-      groupedArticles[year][month].push(article);
+  const articlesByDate = useMemo(() => {
+    const grouped: { [year: string]: { [month: string]: Article[] } } = {};
+    (data ?? []).forEach(article => {
+      const date = new Date(article.createdAt);
+      const year = date.getFullYear().toString();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      if (!grouped[year]) grouped[year] = {};
+      if (!grouped[year][month]) grouped[year][month] = [];
+      grouped[year][month].push(article);
     });
-
-    setArticlesByDate(groupedArticles);
-  }, [articles]);
-
-  const handleClickArticle = (articleId: string) => {
-    navigate(`/user/${userId}/article/${articleId}`);
-  };
+    return grouped;
+  }, [data]);
 
   return (
     <ThemeProvider theme={theme}>
-      <Typography sx={{
-        fontFamily: 'monospace',
-        variant: "h1",
-        fontWeight: 600,
-        p: 1,
-      }}>
+      <Typography sx={{ fontFamily: 'monospace', fontWeight: 600, p: 1 }}>
         Date
       </Typography>
       {Object.keys(articlesByDate).sort().reverse().map((year) => (
         <Accordion sx={{ m: 1 }} key={year}>
-          <AccordionSummary
-            expandIcon={<ArrowDropDownIcon />}>
+          <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
             <Typography>{year}</Typography>
           </AccordionSummary>
           {Object.keys(articlesByDate[year]).sort().reverse().map((month) => (
             <AccordionDetails key={month}>
               <Accordion elevation={0}>
-                <AccordionSummary
-                  expandIcon={<ArrowDropDownIcon />}>
+                <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
                   <Typography>{MONTH_LIST[parseInt(month) - 1]}</Typography>
                 </AccordionSummary>
                 {articlesByDate[year][month].map((article) => (
@@ -107,7 +81,7 @@ function CalendarWidget({ userId }: CalendarWidgetProps) {
                       <Link
                         underline="hover"
                         sx={{ cursor: "pointer" }}
-                        onClick={() => handleClickArticle(article.id)}
+                        onClick={() => navigate(`/user/${userId}/article/${article.id}`)}
                       >
                         {article.title}
                       </Link>

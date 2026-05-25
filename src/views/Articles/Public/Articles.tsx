@@ -1,18 +1,15 @@
-import { useState, useEffect, useContext, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
+import Pagination from "@mui/material/Pagination";
+import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
 
 import PageLayout from "../../../components/layout/PageLayout";
 import ArticleList from "../components/ArticleList";
-
-import { articleApi } from "../../../services/article-api";
-import { useNavigate } from "react-router-dom";
-import handleError from "../../../utils/handle-error";
-import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
-import type { Article } from "../../../types/article";
-import type { ErrorSnackbarContextProps } from "../../../types/error-snackbar-context";
-import type { Cursor } from "../../../types/paged-body";
+import { useArticles } from "../../../hooks/useArticles";
+import { ARTICLES_PER_PAGE } from "../../../config/constants";
 
 const theme = createTheme({
   typography: {
@@ -20,61 +17,18 @@ const theme = createTheme({
   }
 });
 
-const ARTICLES_PER_PAGE = 7;
-
 function Articles() {
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get("page") ?? "1");
 
-  const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const openSnackbarRef = useRef(openSnackbar);
-  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+  const { data, isPending, isError } = useArticles({ status: "published" }, page);
 
-  const [articles, setArticles] = useState<Array<Article>>([]);
-  const cursorRef = useRef<Cursor | null>(null);
-  const loadingRef = useRef<boolean>(false);
-  const loadingIndicatorRef = useRef<HTMLDivElement>(null);
-  const hasMoreRef = useRef<boolean>(true);
+  const totalPages = Math.ceil((data?.total ?? 0) / ARTICLES_PER_PAGE);
 
-  const moreArticles = useCallback(async () => {
-    if (loadingRef.current || !hasMoreRef.current) return;
-    loadingRef.current = true;
-
-    try {
-      const result = await articleApi.all(
-        { status: "published" },
-        { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }
-      );
-
-      if (result.isOk()) {
-        const body = result.unwrap();
-        setArticles((prev) => [...prev, ...body.items]);
-
-        if (body.nextCursor != null) {
-          cursorRef.current = body.nextCursor;
-        } else {
-          hasMoreRef.current = false;
-        }
-      } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
-      }
-    } finally {
-      loadingRef.current = false;
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !loadingRef.current) {
-        moreArticles();
-      }
-    }, { threshold: 1 });
-
-    if (loadingIndicatorRef.current) {
-      observer.observe(loadingIndicatorRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [moreArticles]);
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setSearchParams({ page: String(value) });
+    window.scrollTo(0, 0);
+  };
 
   const leftSideBar = (
     <Stack spacing={1}>
@@ -94,18 +48,35 @@ function Articles() {
         leftSideBar={leftSideBar}
         rightSideBar={rightSideBar}
       >
-        <Stack spacing={2} sx={{ margin: 5 }}>
-          <ArticleList articles={articles} />
-        </Stack>
-        <Box sx={{
-          display: "flex",
-          justifyContent: "center",
-        }}>
-          {loadingRef.current && <p>Loading...</p>}
-          <div ref={loadingIndicatorRef} />
-        </Box>
+        {isPending && (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <CircularProgress />
+          </Box>
+        )}
+        {isError && (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <Typography color="error">記事の取得に失敗しました。</Typography>
+          </Box>
+        )}
+        {data && (
+          <>
+            <Stack spacing={2} sx={{ margin: 5 }}>
+              <ArticleList articles={data.items} />
+            </Stack>
+            {totalPages > 1 && (
+              <Box sx={{ display: "flex", justifyContent: "center", pb: 4 }}>
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
+                  color="primary"
+                />
+              </Box>
+            )}
+          </>
+        )}
       </PageLayout>
-    </ThemeProvider >
+    </ThemeProvider>
   );
 }
 

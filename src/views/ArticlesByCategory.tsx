@@ -1,17 +1,15 @@
-import { useEffect, useState, useContext, useRef } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
+import Pagination from "@mui/material/Pagination";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import PageLayout from "../components/layout/PageLayout";
-
-import { articleApi } from "../services/article-api";
-import handleError from "../utils/handle-error";
-import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
-import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
+import { useArticlesByCategory } from "../hooks/useArticlesByCategory";
+import { ARTICLES_PER_PAGE } from "../config/constants";
 
 const theme = createTheme({
   typography: {
@@ -19,41 +17,20 @@ const theme = createTheme({
   },
 });
 
-type ArticlesByCategory = {
-  articleId: string;
-  articleTitle: string;
-};
-
 function ArticlesByCategory() {
   const navigate = useNavigate();
-  const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const openSnackbarRef = useRef(openSnackbar);
-  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
-
-  const { categoryId } = useParams();
+  const { categoryId } = useParams<{ categoryId: string }>();
   const { categoryName } = useLocation().state;
-  const [articlesByCategory, setArticlesByCategory] = useState<Array<ArticlesByCategory>>();
 
-  useEffect(() => {
-    (async () => {
-      const result = await articleApi.all(
-        { status: "published", categoryId: categoryId, },
-        { perPage: 20, }
-      );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get("page") ?? "1");
 
-      if (result.isOk()) {
-        setArticlesByCategory(result.value.items.map((article) => ({
-          articleId: article.id,
-          articleTitle: article.title,
-        })));
-      } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
-      }
-    })();
-  }, [categoryId, categoryName, navigate]);
+  const { data, isPending, isError } = useArticlesByCategory(categoryId ?? "", page);
+  const totalPages = Math.ceil((data?.total ?? 0) / ARTICLES_PER_PAGE);
 
-  const handleClickArticle = (articleId: string) => {
-    navigate(`/article/${articleId}`);
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setSearchParams({ page: String(value) });
+    window.scrollTo(0, 0);
   };
 
   const leftSideBar = (
@@ -70,51 +47,47 @@ function ArticlesByCategory() {
 
   return (
     <ThemeProvider theme={theme}>
-      <PageLayout
-        leftSideBar={leftSideBar}
-        rightSideBar={rightSideBar}
-      >
-        <Box sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}>
-          <Box sx={{
-            width: "fit-content",
-            margin: "0 auto",
-            textAlign: "center",
-          }}>
-            <Typography sx={{
-              fontFamily: "monospace",
-              variant: "h1",
-              fontWeight: 500,
-              fontSize: "1.5rem",
-            }}>
+      <PageLayout leftSideBar={leftSideBar} rightSideBar={rightSideBar}>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <Box sx={{ width: "fit-content", margin: "0 auto", textAlign: "center" }}>
+            <Typography sx={{ fontFamily: "monospace", fontWeight: 500, fontSize: "1.5rem" }}>
               {categoryName}
             </Typography>
           </Box>
-          <Box sx={{
-            textAlign: "left",
-          }}>
-            {articlesByCategory?.map((article) => (
-              <Link
-                underline="hover"
-                sx={{ cursor: "pointer" }}
-                onClick={() => handleClickArticle(article.articleId)}
-                key={article.articleId}
-              >
-                <Typography
-                  key={article.articleId}
-                  sx={{
-                    fontFamily: "monospace",
-                    m: 2,
-                  }}>
-                  ・{article.articleTitle}
-                </Typography>
-              </Link>
-            ))}
-          </Box>
+
+          {isPending && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+              <CircularProgress />
+            </Box>
+          )}
+          {isError && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+              <Typography color="error">記事の取得に失敗しました。</Typography>
+            </Box>
+          )}
+          {data && (
+            <Box sx={{ textAlign: "left" }}>
+              {data.items.map((article) => (
+                <Link
+                  key={article.id}
+                  underline="hover"
+                  sx={{ cursor: "pointer" }}
+                  onClick={() => navigate(`/article/${article.id}`)}
+                >
+                  <Typography sx={{ fontFamily: "monospace", m: 2 }}>
+                    ・{article.title}
+                  </Typography>
+                </Link>
+              ))}
+            </Box>
+          )}
         </Box>
+
+        {totalPages > 1 && (
+          <Box sx={{ display: "flex", justifyContent: "center", pb: 4 }}>
+            <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+          </Box>
+        )}
       </PageLayout>
     </ThemeProvider>
   );
