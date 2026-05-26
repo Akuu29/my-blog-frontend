@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
@@ -30,13 +30,8 @@ function CategoryRow({
   deleteCategoryHandler,
   showAdminMenu,
 }: CategoryRowProps) {
-  const navigate = useNavigate();
   const [isEdit, setIsEdit] = useState(false);
   const [editCategoryName, setEditCategoryName] = useState(category.name);
-
-  const handleClickCategory = () => {
-    navigate(`/category/${category.id}/articles`, { state: { categoryName: category.name } });
-  };
 
   const handleChangeEditCategoryName = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEditCategoryName(event.target.value);
@@ -93,9 +88,11 @@ function CategoryRow({
           />
         ) : (
           <Link
+            component={RouterLink}
+            to={`/category/${category.id}/articles`}
+            state={{ categoryName: category.name }}
             underline="hover"
-            sx={{ cursor: "pointer" }}
-            onClick={handleClickCategory}>
+            sx={{ cursor: "pointer" }}>
             <Typography
               sx={{
                 m: 1,

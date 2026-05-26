@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -40,10 +40,6 @@ function Header() {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
-  };
-
-  const handleTitleClick = () => {
-    navigate('/');
   };
 
   const handleSignIn = () => {
@@ -146,9 +142,10 @@ function Header() {
         {/* Center Section: Logo */}
         <Box sx={{ display: 'flex', justifyContent: 'center', pt: 3, pb: 2 }}>
           <Link
+            component={RouterLink}
+            to="/"
             color="inherit"
             underline="none"
-            onClick={handleTitleClick}
             sx={{
               cursor: 'pointer',
             }}

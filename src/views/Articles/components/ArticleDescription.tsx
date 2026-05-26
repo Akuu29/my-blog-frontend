@@ -1,18 +1,15 @@
-import { useContext, useEffect, useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { format } from "date-fns";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import rehypeSanitize from "rehype-sanitize";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import PageLayout from "../../../components/layout/PageLayout";
-import { articleApi } from "../../../services/article-api";
-import handleError from "../../../utils/handle-error";
-import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
-import type { Article } from "../../../types/article";
-import type { ErrorSnackbarContextProps } from "../../../types/error-snackbar-context";
+import { useArticle } from "../../../hooks/useArticle";
 
 const theme = createTheme({
   typography: {
@@ -26,71 +23,57 @@ type ArticleProps = {
 };
 
 function ArticleDescription({ leftSideBar, rightSideBar }: ArticleProps) {
-  const navigate = useNavigate();
-  const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const openSnackbarRef = useRef(openSnackbar);
-  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
-
   const { articleId } = useParams<{ articleId: string }>();
-  const [article, setArticle] = useState<Article>();
-
-  useEffect(() => {
-    (async () => {
-      if (!articleId) {
-        return;
-      }
-
-      const result = await articleApi.find(articleId);
-
-      if (result.isOk()) {
-        setArticle(result.unwrap());
-      } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
-      }
-    })();
-  }, [articleId, navigate]);
+  const { data: article, isPending, isError } = useArticle(articleId ?? "");
 
   return (
     <ThemeProvider theme={theme}>
       <Grid container>
-        <PageLayout
-          leftSideBar={leftSideBar}
-          rightSideBar={rightSideBar}
-        >
-          <Grid container spacing={1} alignItems={"flex-end"} sx={{ padding: 2 }}>
-            <Grid item xs={12}>
-              <Typography variant="h4">
-                {article?.title}
-              </Typography>
-            </Grid>
-            {article?.createdAt && (
-              <Grid item xs={6}>
-                <Typography variant="body1" color="text.secondary">
-                  created: {format(article!.createdAt, "MMMM dd, yyyy")}
-                </Typography>
-              </Grid>
-            )}
-            {article?.updatedAt !== article?.createdAt && (
+        <PageLayout leftSideBar={leftSideBar} rightSideBar={rightSideBar}>
+          {isPending && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+              <CircularProgress />
+            </Box>
+          )}
+          {isError && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+              <Typography color="error">記事の取得に失敗しました。</Typography>
+            </Box>
+          )}
+          {article && (
+            <Grid container spacing={1} alignItems={"flex-end"} sx={{ padding: 2 }}>
               <Grid item xs={12}>
-                <Typography variant="body1" color="text.secondary">
-                  updated: {format(article!.updatedAt, "MMMM dd, yyyy")}
-                </Typography>
+                <Typography variant="h4">{article.title}</Typography>
               </Grid>
-            )}
-            <Grid item xs={12}>
-              <MarkdownPreview
-                source={article?.body}
-                style={{
-                  backgroundColor: "transparent",
-                  color: "inherit",
-                  fontFamily: "string",
-                }}
-                wrapperElement={{ "data-color-mode": "light" }}
-                skipHtml={true}
-                rehypePlugins={[rehypeSanitize]}
-              />
+              {article.createdAt && (
+                <Grid item xs={6}>
+                  <Typography variant="body1" color="text.secondary">
+                    created: {format(article.createdAt, "MMMM dd, yyyy")}
+                  </Typography>
+                </Grid>
+              )}
+              {article.updatedAt !== article.createdAt && (
+                <Grid item xs={12}>
+                  <Typography variant="body1" color="text.secondary">
+                    updated: {format(article.updatedAt, "MMMM dd, yyyy")}
+                  </Typography>
+                </Grid>
+              )}
+              <Grid item xs={12}>
+                <MarkdownPreview
+                  source={article.body}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "inherit",
+                    fontFamily: "string",
+                  }}
+                  wrapperElement={{ "data-color-mode": "light" }}
+                  skipHtml={true}
+                  rehypePlugins={[rehypeSanitize]}
+                />
+              </Grid>
             </Grid>
-          </Grid >
+          )}
         </PageLayout>
       </Grid>
     </ThemeProvider>
