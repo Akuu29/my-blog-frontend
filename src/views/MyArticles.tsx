@@ -23,6 +23,8 @@ import type { Tag } from "../types/tag";
 import type { ArticleStatus } from "../types/article";
 import type { UserStatusContextProps } from "../types/user-status-context";
 
+const VALID_TABS: MyArticlesTab[] = ["published", "private"];
+
 type MyArticlesTab = "published" | "private";
 
 const theme = createTheme({
@@ -36,7 +38,8 @@ function MyArticles() {
   const userStatus = useContext(UserStatusContext) as UserStatusContextProps;
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentTab = (searchParams.get("tab") ?? "published") as MyArticlesTab;
+  const rawTab = searchParams.get("tab") ?? "published";
+  const currentTab: MyArticlesTab = VALID_TABS.includes(rawTab as MyArticlesTab) ? rawTab as MyArticlesTab : "published";
   const rawPage = Number(searchParams.get("page") ?? "1");
   const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
 
