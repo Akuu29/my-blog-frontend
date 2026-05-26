@@ -16,10 +16,11 @@ export function useMyArticles(
 ) {
   const queryClient = useQueryClient();
   const perPage = ARTICLES_PER_PAGE;
-  const offset = (page - 1) * perPage;
+  const safePage = Number.isInteger(page) && page > 0 ? page : 1;
+  const offset = (safePage - 1) * perPage;
 
   const query = useQuery({
-    queryKey: ["articles", "list", { status, userId, tagIds, page, perPage }],
+    queryKey: ["articles", "list", { status, userId, tagIds, safePage, perPage }],
     queryFn: async () => {
       const result = tagIds.length > 0
         ? await articleApi.findByTag(
@@ -40,7 +41,7 @@ export function useMyArticles(
   useEffect(() => {
     if (!query.data?.hasNext) return;
     queryClient.prefetchQuery({
-      queryKey: ["articles", "list", { status, userId, tagIds, page: page + 1, perPage }],
+      queryKey: ["articles", "list", { status, userId, tagIds, page: safePage + 1, perPage }],
       queryFn: async () => {
         const result = tagIds.length > 0
           ? await articleApi.findByTag(
@@ -56,7 +57,7 @@ export function useMyArticles(
       },
       staleTime: MY_ARTICLES_STALE_TIME,
     });
-  }, [page, query.data?.hasNext, queryClient, userId, status, tagIds, offset, perPage]);
+  }, [safePage, query.data?.hasNext, queryClient, userId, status, tagIds, offset, perPage]);
 
   return query;
 }
