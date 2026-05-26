@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useParams, useSearchParams, Link as RouterLink } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -18,7 +18,6 @@ const theme = createTheme({
 });
 
 function ArticlesByCategory() {
-  const navigate = useNavigate();
   const { categoryId } = useParams<{ categoryId: string }>();
   const { categoryName } = useLocation().state;
 
@@ -69,10 +68,11 @@ function ArticlesByCategory() {
             <Box sx={{ textAlign: "left" }}>
               {data.items.map((article) => (
                 <Link
+                  component={RouterLink}
+                  to={`/article/${article.id}`}
                   key={article.id}
                   underline="hover"
                   sx={{ cursor: "pointer" }}
-                  onClick={() => navigate(`/article/${article.id}`)}
                 >
                   <Typography sx={{ fontFamily: "monospace", m: 2 }}>
                     ・{article.title}

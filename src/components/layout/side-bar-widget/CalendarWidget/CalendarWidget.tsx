@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
@@ -32,8 +32,6 @@ type CalendarWidgetProps = {
 };
 
 function CalendarWidget({ userId }: CalendarWidgetProps) {
-  const navigate = useNavigate();
-
   const { data } = useQuery({
     queryKey: ["articles", "calendar", userId],
     queryFn: async () => {
@@ -79,9 +77,10 @@ function CalendarWidget({ userId }: CalendarWidgetProps) {
                   <AccordionDetails key={article.id}>
                     <Typography>
                       <Link
+                        component={RouterLink}
+                        to={`/user/${userId}/article/${article.id}`}
                         underline="hover"
                         sx={{ cursor: "pointer" }}
-                        onClick={() => navigate(`/user/${userId}/article/${article.id}`)}
                       >
                         {article.title}
                       </Link>
