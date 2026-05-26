@@ -34,7 +34,8 @@ function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("q") ?? "";
   const currentTab = (searchParams.get("tab") ?? "articles") as SearchType;
-  const page = Number(searchParams.get("page") ?? "1");
+  const rawPage = Number(searchParams.get("page") ?? "1");
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
 
   const trimmedQuery = searchQuery.trim();
 

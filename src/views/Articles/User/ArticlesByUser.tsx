@@ -35,7 +35,8 @@ function ArticlesByUser() {
   const selectedTagIds = useMemo(() => selectedTags.map(t => t.id), [selectedTags]);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const page = Number(searchParams.get("page") ?? "1");
+  const rawPage = Number(searchParams.get("page") ?? "1");
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
 
   const { data, isPending, isError } = useMyArticles(userId, "published", selectedTagIds, page);
   const totalPages = Math.ceil((data?.total ?? 0) / ARTICLES_PER_PAGE);

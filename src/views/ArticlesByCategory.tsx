@@ -22,7 +22,8 @@ function ArticlesByCategory() {
   const { categoryName } = useLocation().state;
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const page = Number(searchParams.get("page") ?? "1");
+  const rawPage = Number(searchParams.get("page") ?? "1");
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
 
   const { data, isPending, isError } = useArticlesByCategory(categoryId ?? "", page);
   const totalPages = Math.ceil((data?.total ?? 0) / ARTICLES_PER_PAGE);

@@ -37,7 +37,8 @@ function MyArticles() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = (searchParams.get("tab") ?? "published") as MyArticlesTab;
-  const page = Number(searchParams.get("page") ?? "1");
+  const rawPage = Number(searchParams.get("page") ?? "1");
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
 
   const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
   const selectedTagIds = useMemo(() => selectedTags.map(t => t.id), [selectedTags]);
