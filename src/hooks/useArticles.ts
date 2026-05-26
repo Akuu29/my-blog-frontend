@@ -15,7 +15,7 @@ export function useArticles(filter: ArticleFilter, page: number) {
   const offset = (safePage - 1) * perPage;
 
   const query = useQuery({
-    queryKey: ["articles", "list", { ...filter, safePage, perPage }],
+    queryKey: ["articles", "list", { ...filter, page: safePage, perPage }],
     queryFn: async () => {
       const result = await articleApi.all(filter, { offset, perPage });
       if (result.isErr()) throw result.unwrap();

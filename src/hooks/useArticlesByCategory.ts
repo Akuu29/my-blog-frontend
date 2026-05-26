@@ -14,7 +14,7 @@ export function useArticlesByCategory(categoryId: string, page: number) {
   const offset = (safePage - 1) * perPage;
 
   const query = useQuery({
-    queryKey: ["articles", "list", { status: "published", categoryId, safePage, perPage }],
+    queryKey: ["articles", "list", { status: "published", categoryId, page: safePage, perPage }],
     queryFn: async () => {
       const result = await articleApi.all(
         { status: "published", categoryId },

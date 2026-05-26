@@ -20,7 +20,7 @@ export function useMyArticles(
   const offset = (safePage - 1) * perPage;
 
   const query = useQuery({
-    queryKey: ["articles", "list", { status, userId, tagIds, safePage, perPage }],
+    queryKey: ["articles", "list", { status, userId, tagIds, page: safePage, perPage }],
     queryFn: async () => {
       const result = tagIds.length > 0
         ? await articleApi.findByTag(
