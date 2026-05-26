@@ -1,5 +1,5 @@
-import { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import rehypeSanitize from "rehype-sanitize";
@@ -15,11 +15,11 @@ import Divider from "@mui/material/Divider";
 
 import PageLayout from "../components/layout/PageLayout";
 import { articleApi } from "../services/article-api";
-import handleError from "../utils/handle-error";
-import { ErrorSnackbarContext } from "../contexts/ErrorSnackbarContext";
-import type { Article } from "../types/article";
-import type { ErrorSnackbarContextProps } from "../types/error-snackbar-context";
 import { RECENT_ARTICLES_COUNT } from "../config/constants";
+import type { Article } from "../types/article";
+import type { PagedBody } from "../types/paged-body";
+
+const ARTICLES_STALE_TIME = 5 * 60 * 1000; // 5 min
 
 const theme = createTheme({
   typography: {
@@ -29,42 +29,21 @@ const theme = createTheme({
 
 function Top() {
   const navigate = useNavigate();
-  const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const openSnackbarRef = useRef(openSnackbar);
-  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
 
-  const [recentArticles, setRecentArticles] = useState<Array<Article>>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const fetchRecentArticles = async () => {
-      setLoading(true);
-
+  const { data, isPending } = useQuery({
+    queryKey: ["articles", "list", { status: "published", perPage: RECENT_ARTICLES_COUNT }],
+    queryFn: async () => {
       const result = await articleApi.all(
         { status: "published" },
-        { cursor: null, perPage: RECENT_ARTICLES_COUNT }
+        { offset: 0, perPage: RECENT_ARTICLES_COUNT },
       );
+      if (result.isErr()) throw result.unwrap();
+      return result.unwrap() as PagedBody<Article>;
+    },
+    staleTime: ARTICLES_STALE_TIME,
+  });
 
-      if (result.isOk()) {
-        const body = result.unwrap();
-        setRecentArticles(body.items);
-      } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
-      }
-
-      setLoading(false);
-    };
-
-    fetchRecentArticles();
-  }, [navigate]);
-
-  const onClickArticle = (article: Article) => {
-    navigate(`/article/${article.id}`);
-  };
-
-  const onViewAllArticles = () => {
-    navigate('/articles');
-  };
+  const recentArticles = data?.items ?? [];
 
   return (
     <ThemeProvider theme={theme}>
@@ -90,7 +69,7 @@ function Top() {
               Recent Articles
             </Typography>
 
-            {loading ? (
+            {isPending ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography>Loading recent articles...</Typography>
               </Box>
@@ -107,12 +86,9 @@ function Top() {
                       sx={{
                         cursor: 'pointer',
                         transition: 'all 0.2s ease-in-out',
-                        '&:hover': {
-                          boxShadow: 3,
-                          transform: 'translateY(-2px)'
-                        }
+                        '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' }
                       }}
-                      onClick={() => onClickArticle(article)}
+                      onClick={() => navigate(`/article/${article.id}`)}
                     >
                       <CardContent>
                         <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
@@ -155,20 +131,13 @@ function Top() {
                 <Button
                   variant="text"
                   size="large"
-                  onClick={onViewAllArticles}
+                  onClick={() => navigate('/articles')}
                   sx={{
-                    px: 4,
-                    py: 1.5,
-                    fontWeight: 'bold',
-                    '&:hover': {
-                      color: '#2980b9',
-                      backgroundColor: 'transparent',
-                    }
+                    px: 4, py: 1.5, fontWeight: 'bold',
+                    '&:hover': { color: '#2980b9', backgroundColor: 'transparent' }
                   }}
                 >
-                  <Typography sx={{
-                    fontFamily: "monospace"
-                  }}>
+                  <Typography sx={{ fontFamily: "monospace" }}>
                     ...View More Articles
                   </Typography>
                 </Button>
@@ -177,7 +146,7 @@ function Top() {
           </Box>
         </Container>
       </PageLayout>
-    </ThemeProvider >
+    </ThemeProvider>
   );
 }
 

@@ -1,25 +1,21 @@
-import { useState, useEffect, useContext, useRef, useCallback } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Pagination from "@mui/material/Pagination";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import PageLayout from "../../../components/layout/PageLayout";
 import CalendarWidget from "../../../components/layout/side-bar-widget/CalendarWidget/CalendarWidget";
 import CategoryWidget from "../../../components/layout/side-bar-widget/CategoryWidget/CategoryWidget";
 import TagWidget from "../../../components/layout/side-bar-widget/TagWidget/TagWidget";
 import ArticleList from "../components/ArticleList";
-
-import { articleApi } from "../../../services/article-api";
 import { userApi } from "../../../services/user-api";
-import handleError from "../../../utils/handle-error";
-import { useEffect as useEffectReact } from "react";
-import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
-import type { Article } from "../../../types/article";
-import type { ErrorSnackbarContextProps } from "../../../types/error-snackbar-context";
+import { useMyArticles } from "../../../hooks/useMyArticles";
+import { ARTICLES_PER_PAGE } from "../../../config/constants";
 import type { Tag } from "../../../types/tag";
-import type { Cursor } from "../../../types/paged-body";
 
 const theme = createTheme({
   typography: {
@@ -27,21 +23,23 @@ const theme = createTheme({
   }
 });
 
-const ARTICLES_PER_PAGE = 7;
-
-interface ArticlesByUserProps {
-  userId?: string;
-  userName?: string;
-}
-
-function ArticlesByUser(props?: ArticlesByUserProps) {
+function ArticlesByUser() {
   const navigate = useNavigate();
   const { userId: userIdFromParams } = useParams();
   const location = useLocation();
   const userNameFromState = (location.state as { userName?: string } | null)?.userName;
 
-  const userId = props?.userId ?? userIdFromParams;
-  const [userName, setUserName] = useState<string | undefined>(props?.userName ?? userNameFromState);
+  const userId = userIdFromParams ?? "";
+  const [userName, setUserName] = useState<string | undefined>(userNameFromState);
+  const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
+  const selectedTagIds = useMemo(() => selectedTags.map(t => t.id), [selectedTags]);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawPage = Number(searchParams.get("page") ?? "1");
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+
+  const { data, isPending, isError } = useMyArticles(userId, "published", selectedTagIds, page);
+  const totalPages = Math.ceil((data?.total ?? 0) / ARTICLES_PER_PAGE);
 
   useEffect(() => {
     if (!userName && userId) {
@@ -51,78 +49,30 @@ function ArticlesByUser(props?: ArticlesByUserProps) {
     }
   }, [userId, userName]);
 
-  const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
-  const openSnackbarRef = useRef(openSnackbar);
-  useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
-
-  const [articles, setArticles] = useState<Array<Article>>([]);
-  const [selectedTags, setSelectedTags] = useState<Array<Tag>>([]);
-  const cursorRef = useRef<Cursor | null>(null);
-  const loadingRef = useRef<boolean>(false);
-  const loadingIndicatorRef = useRef<HTMLDivElement>(null);
-  const hasMoreRef = useRef<boolean>(true);
-
-  const moreArticles = useCallback(async () => {
-    if (loadingRef.current || !hasMoreRef.current) return;
-    if (!userId) return;
-
-    loadingRef.current = true;
-
-    try {
-      const result = selectedTags.length > 0
-        ? await articleApi.findByTag({ tagIds: selectedTags.map(t => t.id), userId: userId as string }, { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE })
-        : await articleApi.all(
-          { status: "published", userId: userId },
-          { cursor: cursorRef.current, perPage: ARTICLES_PER_PAGE }
-        );
-
-      if (result.isOk()) {
-        const body = result.unwrap();
-        setArticles((prev) => [...prev, ...body.items]);
-
-        if (body.nextCursor != null) {
-          cursorRef.current = body.nextCursor;
-        } else {
-          hasMoreRef.current = false;
-        }
-      } else if (result.isErr()) {
-        handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
-      }
-    } finally {
-      loadingRef.current = false;
-    }
-  }, [userId, selectedTags, navigate]);
-
   useEffect(() => {
-    setArticles([]);
-    cursorRef.current = null;
-    hasMoreRef.current = true;
-  }, [userId, selectedTags]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !loadingRef.current) {
-        moreArticles();
-      }
-    }, { threshold: 1 });
-
-    if (loadingIndicatorRef.current) {
-      observer.observe(loadingIndicatorRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [moreArticles]);
-
-  useEffectReact(() => {
     if (!userId) {
-      alert("Failed to get articles");
-      if (window.history.length > 1) {
-        navigate(-1);
-      } else {
-        navigate("/");
-      }
+      if (window.history.length > 1) navigate(-1);
+      else navigate("/");
     }
   }, [userId, navigate]);
+
+  // Reset page to 1 when tags change
+  const prevTagIdsRef = useRef(selectedTagIds.join(","));
+  useEffect(() => {
+    const serialized = selectedTagIds.join(",");
+    if (prevTagIdsRef.current === serialized) return;
+    prevTagIdsRef.current = serialized;
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set("page", "1");
+      return next;
+    });
+  }, [selectedTagIds, setSearchParams]);
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setSearchParams({ page: String(value) });
+    window.scrollTo(0, 0);
+  };
 
   const leftSideBar = (
     <Stack spacing={1}>
@@ -139,10 +89,7 @@ function ArticlesByUser(props?: ArticlesByUserProps) {
 
   return (
     <ThemeProvider theme={theme}>
-      <PageLayout
-        leftSideBar={leftSideBar}
-        rightSideBar={rightSideBar}
-      >
+      <PageLayout leftSideBar={leftSideBar} rightSideBar={rightSideBar}>
         <Stack spacing={2} sx={{ margin: 5 }}>
           {/* Page Title */}
           <Box sx={{ textAlign: "center" }}>
@@ -150,13 +97,25 @@ function ArticlesByUser(props?: ArticlesByUserProps) {
               {`${userName}'s Public Articles`}
             </Typography>
           </Box>
-          {/* Article List */}
-          <ArticleList articles={articles} userId={userId} />
+
+          {isPending && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+              <CircularProgress />
+            </Box>
+          )}
+          {isError && (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+              <Typography color="error">記事の取得に失敗しました。</Typography>
+            </Box>
+          )}
+          {data && <ArticleList articles={data.items} userId={userId} />}
         </Stack>
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          {loadingRef.current && <p>Loading...</p>}
-          <div ref={loadingIndicatorRef} />
-        </Box>
+
+        {totalPages > 1 && (
+          <Box sx={{ display: "flex", justifyContent: "center", pb: 4 }}>
+            <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+          </Box>
+        )}
       </PageLayout>
     </ThemeProvider>
   );

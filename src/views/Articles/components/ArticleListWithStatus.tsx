@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import rehypeSanitize from "rehype-sanitize";
@@ -15,6 +16,7 @@ import { articleApi } from "../../../services/article-api";
 import handleError from "../../../utils/handle-error";
 import { ErrorSnackbarContext } from "../../../contexts/ErrorSnackbarContext";
 import type { Article, ArticleStatus } from "../../../types/article";
+import type { ErrorResponse } from "../../../types/error-response";
 import type { ErrorSnackbarContextProps } from "../../../types/error-snackbar-context";
 
 type ArticleListWithStatusProps = {
@@ -24,9 +26,41 @@ type ArticleListWithStatusProps = {
 
 function ArticleListWithStatus({ articles, userId }: ArticleListWithStatusProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { openSnackbar } = useContext(ErrorSnackbarContext) as ErrorSnackbarContextProps;
   const openSnackbarRef = useRef(openSnackbar);
   useEffect(() => { openSnackbarRef.current = openSnackbar; }, [openSnackbar]);
+
+  const { mutate: deleteArticle } = useMutation<null, ErrorResponse, string>({
+    mutationFn: async (articleId: string) => {
+      const result = await articleApi.delete(articleId);
+      if (result.isErr()) throw result.unwrap();
+      return result.unwrap() as null;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["articles", "list"] });
+    },
+    onError: (error) => {
+      handleError(error, navigate, openSnackbarRef.current, "top", "center");
+    },
+  });
+
+  const { mutate: changeStatus } = useMutation<Article, ErrorResponse, { articleId: string; status: ArticleStatus }>({
+    mutationFn: async ({ articleId, status }) => {
+      const result = await articleApi.update(articleId, {
+        title: null, body: null, status, categoryId: null,
+      });
+      if (result.isErr()) throw result.unwrap();
+      return result.unwrap() as Article;
+    },
+    onSuccess: (article) => {
+      queryClient.invalidateQueries({ queryKey: ["articles", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["articles", "detail", article.id] });
+    },
+    onError: (error) => {
+      handleError(error, navigate, openSnackbarRef.current, "top", "center");
+    },
+  });
 
   const getStatusBadge = (status: ArticleStatus) => {
     const config = {
@@ -37,35 +71,6 @@ function ArticleListWithStatus({ articles, userId }: ArticleListWithStatusProps)
     };
     const { label, color } = config[status];
     return <Chip label={label} color={color} size="small" />;
-  };
-
-  const deleteArticle = async (articleId: string) => {
-    const result = await articleApi.delete(articleId);
-
-    if (result.isOk()) {
-      window.location.reload();
-    } else if (result.isErr()) {
-      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
-    }
-  };
-
-  const editArticle = (articleId: string) => {
-    navigate(`/editor/${articleId}`);
-  };
-
-  const changeStatus = async (articleId: string, status: ArticleStatus) => {
-    const result = await articleApi.update(articleId, {
-      title: null,
-      body: null,
-      status,
-      categoryId: null,
-    });
-
-    if (result.isOk()) {
-      window.location.reload();
-    } else if (result.isErr()) {
-      handleError(result.unwrap(), navigate, openSnackbarRef.current, "top", "center");
-    }
   };
 
   const onClickArticle = (article: Article) => {
@@ -79,9 +84,7 @@ function ArticleListWithStatus({ articles, userId }: ArticleListWithStatusProps)
   if (articles.length === 0) {
     return (
       <Box sx={{ textAlign: "center", py: 4 }}>
-        <Typography color="text.secondary">
-          No articles found.
-        </Typography>
+        <Typography color="text.secondary">No articles found.</Typography>
       </Box>
     );
   }
@@ -97,22 +100,16 @@ function ArticleListWithStatus({ articles, userId }: ArticleListWithStatusProps)
         >
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <Box sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}>
-                <Typography variant="h5">
-                  {article.title}
-                </Typography>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography variant="h5">{article.title}</Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   {getStatusBadge(article.status)}
                   <div onClick={(e) => e.stopPropagation()}>
                     <ArticleAdminMenu
                       articleStatus={article.status}
                       deleteArticle={() => deleteArticle(article.id)}
-                      editArticle={() => editArticle(article.id)}
-                      changeStatus={(status) => changeStatus(article.id, status)}
+                      editArticle={() => navigate(`/editor/${article.id}`)}
+                      changeStatus={(status) => changeStatus({ articleId: article.id, status })}
                     />
                   </div>
                 </Box>
