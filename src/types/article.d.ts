@@ -2,6 +2,7 @@ export type ArticleStatus = "draft" | "private" | "published" | "deleted";
 
 export type Article = {
   id: string;
+  userId: string;
   title: string;
   body: string;
   status: ArticleStatus;
