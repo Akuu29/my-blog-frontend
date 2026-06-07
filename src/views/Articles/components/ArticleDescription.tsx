@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { useParams } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { format } from "date-fns";
@@ -10,6 +11,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 import PageLayout from "../../../components/layout/PageLayout";
 import { useArticle } from "../../../hooks/useArticle";
+import { UserStatusContext } from "../../../contexts/UserStatusContext";
+import ArticleSummarySection from "./ArticleSummary/ArticleSummarySection";
 
 const theme = createTheme({
   typography: {
@@ -25,6 +28,8 @@ type ArticleProps = {
 function ArticleDescription({ leftSideBar, rightSideBar }: ArticleProps) {
   const { articleId } = useParams<{ articleId: string }>();
   const { data: article, isPending, isError } = useArticle(articleId ?? "");
+  const userStatusContext = useContext(UserStatusContext);
+  const isOwner = !!userStatusContext?.currentUserId && userStatusContext.currentUserId === article?.userId;
 
   return (
     <ThemeProvider theme={theme}>
@@ -59,6 +64,13 @@ function ArticleDescription({ leftSideBar, rightSideBar }: ArticleProps) {
                   </Typography>
                 </Grid>
               )}
+              <Grid item xs={12} sx={{ my: 2 }}>
+                <ArticleSummarySection
+                  articleId={article.id}
+                  articleStatus={article.status}
+                  isOwner={isOwner}
+                />
+              </Grid>
               <Grid item xs={12}>
                 <MarkdownPreview
                   source={article.body}
